@@ -1,16 +1,23 @@
 #!/bin/bash
 
+## utility functions ##########################################################
+
+function get_dir {
+	# echo "get_dir "$1" -> "${1%*/}""
+	echo "${1%/*}"
+}
+
 function get_full_path {
 	if [ -z "$1" ]; then
 		echo "E: cannot map an empty path";
 	fi
 	if [ -d "$1" ]; then
-		out="$(cd $1 2>/dev/null && pwd)"
+		out="$(cd "$1" 2>/dev/null && pwd)"
 	else
-		out="$(cd $(dirname $1) 2>/dev/null && pwd)"
+		out="$(cd "$(get_dir "$1")" 2>/dev/null && pwd)"
 	fi
 	if [ -z "$out" ]; then
-		echo "E: get_full_path failed on $1"
+		echo "E: get_full_path failed on "$1""
 	fi
 	echo "$out"
 }
@@ -23,10 +30,31 @@ function map_file_name {
 		echo "W: tried to map empty file name"; exit 2;
 	fi
 
-	#chop off root folder
-	rel="${2#$1}"
-	echo "$data_folder$rel.par2"
+	## relative path mapping (removes the root folder)
+	#rel="${2#$1}"
+	#echo "$data_folder$rel.par2"
+
+	# absolute path mapping (keeps the root folder)
+	echo "$data_folder$2.par2"
 }
+
+function trim_end {
+	if [ -z "$1" ]; then
+		echo "E: cannot trim empty string"; exit 1;
+	fi
+	if [ -z "$2" ]; then
+		echo "E: missing trim character"; exit 2;
+	fi
+	# echo "trim_end $1 | $2"
+	curr="$1"; last=""
+	while [ "$last" != "$curr" ]; do
+		last="$curr";
+		curr="${curr%$2}";
+	done
+	echo "$curr"
+}
+
+## program functions ##########################################################
 
 function usage {
 	echo "Usage $0 [options] (folder) [...]"
@@ -40,12 +68,12 @@ function parse_args {
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-d)
-		data_folder="$2"
+		data_folder="$(trim_end "$2" '/')"
 		shift; shift; ;;
 		-h|--help)
 		usage; ;;
 		*)
-		roots+=("$(get_full_path $1)")
+		roots+=("$(get_full_path "$1")")
 		shift; ;;
 		esac
 	done
@@ -58,8 +86,6 @@ function check_args {
 	if [ ${#roots[*]} -lt 1 ]; then
 		echo "E: must specify at least one foler"; exit 2;
 	fi
-	# echo $data_folder
-	# echo "${roots[*]}"
 }
 
 function recurse_folder {
@@ -91,8 +117,16 @@ function process_file {
 	#		no - done
 	#		yes - update par file; record exists info
 
-	echo "$1"
-	map_file_name "$2" "$1"
+	dest="$(map_file_name "$(trim_end "$2" '/')" "$(trim_end "$1" '/')")"
+	dir="$(get_dir "$1")"
+	if [ ! -f "$dest" ]; then
+		mkdir -p "$(get_dir "$dest")"
+		# echo par2 c -q -q -r1 -n1 -B "$dir" -a "$dest" "$1"
+		nice -n 10 par2 c -q -q -r1 -n1 -B "$dir" -a "$dest" "$1"
+	else
+		echo par2 v -q "$dest" -B "$dir"
+		nice -n 10 par2 v -q -q -B "$dir" -a "$dest"
+	fi
 }
 
 function update_archive {
@@ -101,33 +135,9 @@ function update_archive {
 	done
 }
 
+## main #######################################################################
+
 if [ -z "$1" ]; then usage; fi
 parse_args "$@"
 check_args
 update_archive
-
-
-# echo $data_folder
-# echo "${roots[*]}"
-
-#case $i in
-#    -e=*|--extension=*)
-#    EXTENSION="${i#*=}"
-#    shift # past argument=value
-#    ;;
-#    -s=*|--searchpath=*)
-#    SEARCHPATH="${i#*=}"
-#    shift # past argument=value
-#    ;;
-#    -l=*|--lib=*)
-#    LIBPATH="${i#*=}"
-#    shift # past argument=value
-#    ;;
-#    --default)
-#    DEFAULT=YES
-#    shift # past argument with no value
-#    ;;
-#    *)
-#          # unknown option
-#    ;;
-#esac
