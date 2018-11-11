@@ -68,7 +68,7 @@ function parse_args {
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-d)
-		data_folder="$(trim_end "$2" '/')"
+		data_folder="$(trim_end "$(get_full_path "$2")" '/')"
 		shift; shift; ;;
 		-h|--help)
 		usage; ;;
@@ -86,6 +86,7 @@ function check_args {
 	if [ ${#roots[*]} -lt 1 ]; then
 		echo "E: must specify at least one foler"; exit 2;
 	fi
+	echo "data_folder=$data_folder"
 }
 
 function recurse_folder {
@@ -98,16 +99,18 @@ function recurse_folder {
 	if [ -z "$3" ]; then
 		echo "E: missing root folder"; exit 3
 	fi
-
-	for i in "$1"/*;do
-		if [ -d "$i" ];then
-			# echo "dir: $i"
-			recurse_folder "$i" "$2" "$3"
-		elif [ -f "$i" ]; then
-			"$2" "$i" "$3"
-		fi
-		sleep 0.1
-	done
+	if [ "$1" != "$data_folder" ]; then
+		for i in "$1"/*; do
+			if [ -d "$i" ]; then
+				echo "dir: $i"
+				recurse_folder "$i" "$2" "$3"
+			elif [ -f "$i" ]; then
+				#run callback
+				"$2" "$i" "$3"
+			fi
+			# sleep 0.1
+		done
+	fi
 }
 
 function process_file {
@@ -122,9 +125,9 @@ function process_file {
 	if [ ! -f "$dest" ]; then
 		mkdir -p "$(get_dir "$dest")"
 		# echo par2 c -q -q -r1 -n1 -B "$dir" -a "$dest" "$1"
-		nice -n 10 par2 c -q -q -r1 -n1 -B "$dir" -a "$dest" "$1"
+		nice -n 10 par2 c -q -q -r1 -n1 -B "$dir" -a "$dest" "$1" >/dev/null
 	else
-		echo par2 v -q "$dest" -B "$dir"
+		# echo par2 v -q "$dest" -B "$dir"
 		nice -n 10 par2 v -q -q -B "$dir" -a "$dest"
 	fi
 }
