@@ -1,5 +1,4 @@
-#!/bin/bash -x
-PS4='+ $(date "+%s.%N ($LINENO) ")'
+#!/bin/bash
 
 ## utility functions ##########################################################
 
