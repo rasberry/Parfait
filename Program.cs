@@ -19,6 +19,10 @@ namespace Parfait
 				#else
 				Log.Error(e.Message);
 				#endif
+			} finally {
+				if (Par2LogFile != null) {
+					Par2LogFile.Dispose();
+				}
 			}
 		}
 
@@ -26,10 +30,6 @@ namespace Parfait
 		{
 			LastRunDate = GetLastRunDate();
 			UpdateArchive();
-
-			//Exec("par2","--help",out string stdout,out string stderr);
-			//Console.WriteLine(stdout);
-			//Console.Error.WriteLine(stderr);
 		}
 
 		static void Usage()
@@ -39,6 +39,7 @@ namespace Parfait
 				+"\n Options:"
 				+"\n  -d (folder)    location of par2 data folder"
 				+"\n  -x (file)      path to par2 executable"
+				+"\n  -l (log file)  log par2 commands and output to this file"
 			);
 		}
 
@@ -70,6 +71,10 @@ namespace Parfait
 						return false;
 					}
 				}
+				else if (curr == "-l" && ++a < args.Length) {
+					var fs = File.Open(args[a],FileMode.Create,FileAccess.Write,FileShare.Read);
+					Par2LogFile = new StreamWriter(fs);
+				}
 				else if (!String.IsNullOrWhiteSpace(curr)) {
 					RootFolders.Add(curr);
 				}
@@ -93,6 +98,7 @@ namespace Parfait
 
 		static string DataFolder = null;
 		static string Par2Path = "par2";
+		static StreamWriter Par2LogFile = null;
 		static List<string> RootFolders = new List<string>();
 		static DateTimeOffset LastRunDate = DateTimeOffset.MinValue;
 
@@ -123,8 +129,7 @@ namespace Parfait
 				var allFiles = EnumerateFiles(root);
 
 				foreach(string file in allFiles) {
-					Console.WriteLine(file);
-					//UpdateFile(file);
+					UpdateFile(file);
 				}
 			}
 		}
@@ -186,13 +191,22 @@ namespace Parfait
 		{
 			// skip empty file names
 			if (String.IsNullOrWhiteSpace(file)) { return; }
-			var info = new FileInfo(file);
+			file = Path.GetFullPath(file);
+
 			// skip 0 byte files
+			var info = new FileInfo(file);
 			if (info.Length < 1) { return; }
 			
-			string noRoot = Path.GetRelativePath(Path.GetPathRoot(file),file);
-			string par2DataFile = Path.Combine(DataFolder,noRoot);
+			string root = Path.GetPathRoot(file);
+			string noRoot = String.IsNullOrWhiteSpace(root)
+				? file
+				: Path.GetRelativePath(root,file)
+			;
+			string par2DataFile = Path.GetFullPath(
+				Path.Combine(DataFolder,noRoot)
+			);
 
+			//TODO check to see if src file has changed
 			if (!File.Exists(par2DataFile))
 			{
 				string parDir = Path.GetDirectoryName(par2DataFile);
@@ -201,14 +215,22 @@ namespace Parfait
 
 				string args = "c -q -q -r1 -n1 -B \""+fileDir+"\" -a \""+par2DataFile+"\" \""+file+"\"";
 				int exit = Exec(Par2Path,args,out string stdout, out string stderr);
+
+				if (Par2LogFile != null) {
+					Par2LogFile.WriteLine(exit+": "+Par2Path+" "+args);
+					if (!String.IsNullOrWhiteSpace(stdout)) {
+						Par2LogFile.WriteLine("SO: "+stdout);
+					}
+					if (!String.IsNullOrWhiteSpace(stderr)) {
+						Par2LogFile.WriteLine("SE: "+stderr);
+					}
+				}
 			}
 		}
 
 		static int Exec(string program, string args, out string stdout,out string stderr)
 		{
 			stdout = stderr = null;
-			Log.Debug(program+" "+args);
-			return 0;
 			using (Process proc = new Process())
 			{
 				var si = new ProcessStartInfo();
