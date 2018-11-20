@@ -10,6 +10,12 @@ Usage parfait.sh [options] (folder) [...]
 ```
 
 ## Design ##
-[Parchive](https://github.com/Parchive/par2cmdline) files use [Reed-Solomon](https://en.wikipedia.org/wiki/Reed-Solomon_error_correction) codes to save file recovery information. 
+[Parchive](https://github.com/Parchive/par2cmdline) files use [Reed-Solomon](https://en.wikipedia.org/wiki/Reed-Solomon_error_correction) codes to save file recovery information.
 
 Parfait is a wrapper to create and manage par2 files so that recovery info can be kept for one or more folders.
+
+## Additional links / information ##
+* https://www.nuget.org/packages/ZXing.Net/
+* https://github.com/micjahn/ZXing.Net/blob/master/Source/test/src/common/reedsolomon/ReedSolomonTestCase.cs
+* https://github.com/antiduh/ErrorCorrection/tree/master/ErrorCorrection
+* https://stackoverflow.com/questions/24578536/how-to-apply-reed-solomon-algorithm-using-zxing-in-c-sharp

@@ -142,7 +142,7 @@ namespace Parfait
 			}
 			var folders = Directory.EnumerateDirectories(root,"*",SearchOption.TopDirectoryOnly);
 			foreach(string d in folders) {
-				if (!IsHidden(d)) { 
+				if (!IsHidden(d)) {
 					var deepFiles = EnumerateFiles(d);
 					foreach(string df in deepFiles) { yield return df; }
 				}
@@ -162,7 +162,7 @@ namespace Parfait
 		//		}
 		//		var folders = Directory.EnumerateDirectories(current,"*",SearchOption.TopDirectoryOnly);
 		//		foreach(string f in folders) {
-		//			if (!IsHidden(f)) { 
+		//			if (!IsHidden(f)) {
 		//				_folderStack.Push(f);
 		//			}
 		//		}
@@ -196,34 +196,64 @@ namespace Parfait
 			// skip 0 byte files
 			var info = new FileInfo(file);
 			if (info.Length < 1) { return; }
-			
+
 			string root = Path.GetPathRoot(file);
 			string noRoot = String.IsNullOrWhiteSpace(root)
 				? file
 				: Path.GetRelativePath(root,file)
 			;
 			string par2DataFile = Path.GetFullPath(
-				Path.Combine(DataFolder,noRoot)
+				Path.Combine(DataFolder,noRoot) + ".par2"
 			);
 
 			//TODO check to see if src file has changed
-			if (!File.Exists(par2DataFile))
+			if (!File.Exists(par2DataFile)) {
+				CreatePar(file, par2DataFile);
+			}
+			else {
+				VerifyFile(file, par2DataFile);
+			}
+		}
+
+		static void CreatePar(string file, string par2DataFile)
+		{
+			//0 = success
+			//1 = ?
+
+			string parDir = Path.GetDirectoryName(par2DataFile);
+			Directory.CreateDirectory(parDir);
+			string fileDir = Path.GetDirectoryName(file);
+			string qq = Par2LogFile != null ? "-q " : "-q -q ";
+
+			//apparently -B has to go before -a or it doesn't work
+			string args = "c "+qq+"-r1 -n1 -B \"" + fileDir + "\" -a \"" + par2DataFile + "\" \"" + file + "\"";
+			RunPar(args);
+		}
+
+		static void VerifyFile(string file, string par2DataFile)
+		{
+			//0 = success
+			//1 = damaged but can repair
+			//2 = damaged and cannot repair
+
+			string fileDir = Path.GetDirectoryName(file);
+			string qq = Par2LogFile != null ? "-q " : "-q -q ";
+			string args = "v "+qq+"-B \""+fileDir+"\" -a \""+par2DataFile+"\"";
+			RunPar(args);
+		}
+
+		static void RunPar(string args)
+		{
+			int exit = Exec(Par2Path, args, out string stdout, out string stderr);
+
+			if (Par2LogFile != null)
 			{
-				string parDir = Path.GetDirectoryName(par2DataFile);
-				Directory.CreateDirectory(parDir);
-				string fileDir = Path.GetDirectoryName(file);
-
-				string args = "c -q -q -r1 -n1 -B \""+fileDir+"\" -a \""+par2DataFile+"\" \""+file+"\"";
-				int exit = Exec(Par2Path,args,out string stdout, out string stderr);
-
-				if (Par2LogFile != null) {
-					Par2LogFile.WriteLine(exit+": "+Par2Path+" "+args);
-					if (!String.IsNullOrWhiteSpace(stdout)) {
-						Par2LogFile.WriteLine("SO: "+stdout);
-					}
-					if (!String.IsNullOrWhiteSpace(stderr)) {
-						Par2LogFile.WriteLine("SE: "+stderr);
-					}
+				Par2LogFile.WriteLine(exit + ": " + Par2Path + " " + args);
+				if (!String.IsNullOrWhiteSpace(stdout)) {
+					Par2LogFile.WriteLine("SO: " + stdout);
+				}
+				if (!String.IsNullOrWhiteSpace(stderr)) {
+					Par2LogFile.WriteLine("SE: " + stderr);
 				}
 			}
 		}
