@@ -10,7 +10,7 @@ namespace Parfait
 	{
 		static void Main(string[] args)
 		{
-			if (!ParseArgs(args)) { return; }
+			if (!Options.ParseArgs(args)) { return; }
 			try {
 				MainMain(args);
 			} catch(Exception e) {
@@ -20,111 +20,41 @@ namespace Parfait
 				Log.Error(e.Message);
 				#endif
 			} finally {
-				if (Par2LogFile != null) {
-					Par2LogFile.Dispose();
+				if (Options.Par2LogFile != null) {
+					Options.Par2LogFile.Dispose();
 				}
 			}
 		}
 
 		static void MainMain(string[] args)
 		{
-			LastRunDate = GetLastRunDate();
 			UpdateArchive();
+			// PruneArchive();
 		}
 
-		static void Usage()
-		{
-			Log.Message(""
-				+  "Usage: "+nameof(Parfait)+" [options] (root folder) [...]"
-				+"\n Options:"
-				+"\n  -d (folder)    location of par2 data folder"
-				+"\n  -x (file)      path to par2 executable"
-				+"\n  -l (log file)  log par2 commands and output to this file"
-			);
-		}
-
-		static bool ParseArgs(string[] args)
-		{
-			if (args.Length < 1) {
-				Usage();
-				return false;
-			}
-
-			for(int a=0; a<args.Length; a++)
-			{
-				string curr = args[a];
-				if (curr == "-h" || curr == "--help") {
-					Usage();
-					return false;
-				}
-				else if (curr == "-d" && ++a < args.Length) {
-					DataFolder = args[a];
-					if (String.IsNullOrWhiteSpace(DataFolder)) {
-						Log.Error("invalid data folder");
-						return false;
-					}
-				}
-				else if (curr == "-x" && ++a < args.Length) {
-					Par2Path = args[a];
-					if (!File.Exists(Par2Path ?? "")) {
-						Log.Error("par2 executable not found");
-						return false;
-					}
-				}
-				else if (curr == "-l" && ++a < args.Length) {
-					var fs = File.Open(args[a],FileMode.Create,FileAccess.Write,FileShare.Read);
-					Par2LogFile = new StreamWriter(fs);
-				}
-				else if (!String.IsNullOrWhiteSpace(curr)) {
-					RootFolders.Add(curr);
-				}
-			}
-
-			if (RootFolders.Count < 1) {
-				Log.Error("you must specify at least one root folder");
-				return false;
-			}
-			else {
-				foreach(string folder in RootFolders) {
-					if (!Directory.Exists(folder)) {
-						Log.Error("cannot find folder \""+folder+"\"");
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
-
-		static string DataFolder = null;
-		static string Par2Path = "par2";
-		static StreamWriter Par2LogFile = null;
-		static List<string> RootFolders = new List<string>();
-		static DateTimeOffset LastRunDate = DateTimeOffset.MinValue;
-
-		static DateTimeOffset GetLastRunDate()
-		{
-			string lr = Path.Combine(DataFolder,"last-run");
-			if (!File.Exists(lr)) {
-				Log.Warning("Cannot find last-run. All files will be processed");
-				return DateTimeOffset.MinValue;
-			}
-			string lrText = (File.ReadAllText(lr) ?? "").Trim();
-			if (!long.TryParse(lrText, out long unixTime)) {
-				Log.Warning("Could not parse last-run. All files will be processed");
-				return DateTimeOffset.MinValue;
-			}
-			return DateTimeOffset.FromUnixTimeSeconds(unixTime);
-		}
+		//static DateTimeOffset GetLastRunDate()
+		//{
+		//	string lr = Path.Combine(DataFolder,"last-run");
+		//	if (!File.Exists(lr)) {
+		//		Log.Warning("Cannot find last-run. All files will be processed");
+		//		return DateTimeOffset.MinValue;
+		//	}
+		//	string lrText = (File.ReadAllText(lr) ?? "").Trim();
+		//	if (!long.TryParse(lrText, out long unixTime)) {
+		//		Log.Warning("Could not parse last-run. All files will be processed");
+		//		return DateTimeOffset.MinValue;
+		//	}
+		//	return DateTimeOffset.FromUnixTimeSeconds(unixTime);
+		//}
 
 		static void UpdateArchive()
 		{
 			// make sure data folder exists
-			if (!Directory.Exists(DataFolder)) {
-				Directory.CreateDirectory(DataFolder);
+			if (!Directory.Exists(Options.DataFolder)) {
+				Directory.CreateDirectory(Options.DataFolder);
 			}
 
-			foreach(string root in RootFolders) {
+			foreach(string root in Options.RootFolders) {
 				Log.Debug(root);
 				var allFiles = EnumerateFiles(root);
 
@@ -148,26 +78,6 @@ namespace Parfait
 				}
 			}
 		}
-
-		//static Stack<string> _folderStack = new Stack<string>();
-		//static IEnumerable<string> EnumFiles(string root)
-		//{
-		//	_folderStack.Push(root);
-		//	while(_folderStack.Count > 0)
-		//	{
-		//		string current = _folderStack.Pop();
-		//		var files = Directory.EnumerateFiles(current,"*",SearchOption.TopDirectoryOnly);
-		//		foreach(string f in files) {
-		//			if (!IsHidden(f)) { yield return f; }
-		//		}
-		//		var folders = Directory.EnumerateDirectories(current,"*",SearchOption.TopDirectoryOnly);
-		//		foreach(string f in folders) {
-		//			if (!IsHidden(f)) {
-		//				_folderStack.Push(f);
-		//			}
-		//		}
-		//	}
-		//}
 
 		static string[] _hideChecks = new string[] {
 			Path.DirectorySeparatorChar+".",
@@ -202,9 +112,13 @@ namespace Parfait
 				? file
 				: Path.GetRelativePath(root,file)
 			;
-			string par2DataFile = Path.GetFullPath(
-				Path.Combine(DataFolder,noRoot) + ".par2"
+			string dataFileRoot = Path.GetFullPath(
+				Path.Combine(Options.DataFolder,noRoot)
 			);
+			string par2DataFile = dataFileRoot + ".par2";
+			string infoDataFile = dataFileRoot + ".json";
+
+
 
 			//TODO check to see if src file has changed
 			if (!File.Exists(par2DataFile)) {
@@ -223,7 +137,7 @@ namespace Parfait
 			string parDir = Path.GetDirectoryName(par2DataFile);
 			Directory.CreateDirectory(parDir);
 			string fileDir = Path.GetDirectoryName(file);
-			string qq = Par2LogFile != null ? "-q " : "-q -q ";
+			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
 
 			//apparently -B has to go before -a or it doesn't work
 			string args = "c "+qq+"-r1 -n1 -B \"" + fileDir + "\" -a \"" + par2DataFile + "\" \"" + file + "\"";
@@ -237,23 +151,23 @@ namespace Parfait
 			//2 = damaged and cannot repair
 
 			string fileDir = Path.GetDirectoryName(file);
-			string qq = Par2LogFile != null ? "-q " : "-q -q ";
+			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
 			string args = "v "+qq+"-B \""+fileDir+"\" -a \""+par2DataFile+"\"";
 			RunPar(args);
 		}
 
 		static void RunPar(string args)
 		{
-			int exit = Exec(Par2Path, args, out string stdout, out string stderr);
+			int exit = Exec(Options.Par2Path, args, out string stdout, out string stderr);
 
-			if (Par2LogFile != null)
+			if (Options.Par2LogFile != null)
 			{
-				Par2LogFile.WriteLine(exit + ": " + Par2Path + " " + args);
+				Options.Par2LogFile.WriteLine(exit + ": " + Options.Par2Path + " " + args);
 				if (!String.IsNullOrWhiteSpace(stdout)) {
-					Par2LogFile.WriteLine("SO: " + stdout);
+					Options.Par2LogFile.WriteLine("SO: " + stdout);
 				}
 				if (!String.IsNullOrWhiteSpace(stderr)) {
-					Par2LogFile.WriteLine("SE: " + stderr);
+					Options.Par2LogFile.WriteLine("SE: " + stderr);
 				}
 			}
 		}
