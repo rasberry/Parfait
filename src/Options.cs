@@ -34,10 +34,11 @@ namespace Parfait
 					return false;
 				}
 				else if (curr == "-d" && ++a < args.Length) {
-					DataFolder = args[a];
-					if (String.IsNullOrWhiteSpace(DataFolder)) {
+					if (String.IsNullOrWhiteSpace(args[a])) {
 						Log.Error("invalid data folder");
 						return false;
+					} else {
+						DataFolder = Path.GetFullPath(args[a]);
 					}
 				}
 				else if (curr == "-x" && ++a < args.Length) {

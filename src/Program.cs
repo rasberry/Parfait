@@ -28,8 +28,8 @@ namespace Parfait
 
 		static void MainMain(string[] args)
 		{
-			UpdateArchive();
-			// PruneArchive();
+			// UpdateArchive();
+			PruneArchive();
 		}
 
 		static void UpdateArchive()
@@ -82,6 +82,19 @@ namespace Parfait
 			return false;
 		}
 
+		static string MapFileToPar2File(string file)
+		{
+			string root = Path.GetPathRoot(file);
+			string noRoot = String.IsNullOrWhiteSpace(root)
+				? file
+				: Path.GetRelativePath(root,file)
+			;
+			string dataFileRoot = Path.GetFullPath(
+				Path.Combine(Options.DataFolder,noRoot)
+			);
+			return dataFileRoot + ".par2";
+		}
+
 		static void UpdateFile(string file)
 		{
 			// skip empty file names
@@ -92,15 +105,7 @@ namespace Parfait
 			var info = new FileInfo(file);
 			if (info.Length < 1) { return; }
 
-			string root = Path.GetPathRoot(file);
-			string noRoot = String.IsNullOrWhiteSpace(root)
-				? file
-				: Path.GetRelativePath(root,file)
-			;
-			string dataFileRoot = Path.GetFullPath(
-				Path.Combine(Options.DataFolder,noRoot)
-			);
-			string par2DataFile = dataFileRoot + ".par2";
+			string par2DataFile = MapFileToPar2File(file);
 
 			bool doCreate = false;
 			bool doVerify = false;
@@ -161,6 +166,16 @@ namespace Parfait
 				Log.Warning("Par2 reported a generic error"); return;
 			case ParHelpers.ParResult.OutOfMemory:
 				Log.Warning("Par2 reported out of memory error"); return;
+			}
+		}
+
+		static void PruneArchive()
+		{
+			int dataFolderLen = Options.DataFolder.Length;
+			var parFiles = EnumerateFiles(Options.DataFolder);
+			foreach(string f in parFiles) {
+				string orig = f.Substring(dataFolderLen);
+				Log.Debug(orig);
 			}
 		}
 	}
