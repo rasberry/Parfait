@@ -32,21 +32,6 @@ namespace Parfait
 			// PruneArchive();
 		}
 
-		//static DateTimeOffset GetLastRunDate()
-		//{
-		//	string lr = Path.Combine(DataFolder,"last-run");
-		//	if (!File.Exists(lr)) {
-		//		Log.Warning("Cannot find last-run. All files will be processed");
-		//		return DateTimeOffset.MinValue;
-		//	}
-		//	string lrText = (File.ReadAllText(lr) ?? "").Trim();
-		//	if (!long.TryParse(lrText, out long unixTime)) {
-		//		Log.Warning("Could not parse last-run. All files will be processed");
-		//		return DateTimeOffset.MinValue;
-		//	}
-		//	return DateTimeOffset.FromUnixTimeSeconds(unixTime);
-		//}
-
 		static void UpdateArchive()
 		{
 			// make sure data folder exists
@@ -117,26 +102,65 @@ namespace Parfait
 			);
 			string par2DataFile = dataFileRoot + ".par2";
 
+			bool doCreate = false;
+			bool doVerify = false;
+			bool doRemove = false;
 			//if we're missing the par2 file create it
 			if (!File.Exists(par2DataFile)) {
 				Log.Info("Create\t"+par2DataFile);
-				ParHelpers.CreatePar(file, par2DataFile);
+				doCreate = true;
 			}
 			else {
 				var par2Info = new FileInfo(par2DataFile);
 				var fileInfo = new FileInfo(file);
 				//if par2 is newer than file - verify
-				if (par2Info.LastWriteTimeUtc >= fileInfo.LastWriteTime) {
+				if (par2Info.LastWriteTimeUtc >= fileInfo.LastWriteTimeUtc) {
 					Log.Info("Verify\t"+par2DataFile);
-					ParHelpers.VerifyFile(file, par2DataFile);
-					//TODO do something with non success return
+					doVerify = true;
 				}
 				//assume file was modified by a human and we need to re-create the par2
 				else {
 					Log.Info("ReCreate\t"+par2DataFile);
-					ParHelpers.RemoveParSet(par2DataFile);
-					ParHelpers.CreatePar(file, par2DataFile);
+					doRemove = true;
+					doCreate = true;
 				}
+			}
+
+			if (Options.DryRun) { return; }
+			if (doRemove) {
+				ParHelpers.RemoveParSet(par2DataFile);
+			}
+			if (doCreate) {
+				var result = ParHelpers.CreatePar(file, par2DataFile);
+				HandleParResult(result,file);
+			}
+			else if (doVerify) {
+				var result = ParHelpers.VerifyFile(file, par2DataFile);
+				HandleParResult(result,file);
+			}
+		}
+
+		static void HandleParResult(ParHelpers.ParResult result, string file)
+		{
+			switch(result)
+			{
+			case ParHelpers.ParResult.Success: return;
+			case ParHelpers.ParResult.CanRepair:
+				Log.Message("File can be repaired\t"+file); return;
+			case ParHelpers.ParResult.CannotRepair:
+				Log.Warning("File CANNOT be repaired\t"+file); return;
+			case ParHelpers.ParResult.BadArguments:
+				Log.Error("Bad arguments passed to Par2"); return;
+			case ParHelpers.ParResult.NoEnoughData:
+				Log.Warning("Not enough data to verify\t"+file); return;
+			case ParHelpers.ParResult.RepairFailed:
+				Log.Warning("Repair FAILED\t"+file); return;
+			case ParHelpers.ParResult.FileMissing:
+				Log.Error("Cannot find file\t"+file); return;
+			case ParHelpers.ParResult.Error:
+				Log.Warning("Par2 reported a generic error"); return;
+			case ParHelpers.ParResult.OutOfMemory:
+				Log.Warning("Par2 reported out of memory error"); return;
 			}
 		}
 	}

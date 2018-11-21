@@ -21,7 +21,9 @@ namespace Parfait
 
 		public static void Info(string m)
 		{
-			Console.WriteLine("I: "+m);
+			if (Options.Verbose) {
+				Console.WriteLine("I: "+m);
+			}
 		}
 
 		public static void Debug(string m)

@@ -14,7 +14,8 @@ namespace Parfait
 				+"\n  -d (folder)    location of par2 data folder"
 				+"\n  -x (file)      path to par2 executable"
 				+"\n  -l (log file)  log par2 commands and output to this file"
-				//TODO implement dry run
+				+"\n  -t             test mode. show info, but don't perform any actions"
+				+"\n  -v             verbose mode. show more info"
 			);
 		}
 
@@ -50,6 +51,12 @@ namespace Parfait
 					var fs = File.Open(args[a],FileMode.Create,FileAccess.Write,FileShare.Read);
 					Par2LogFile = new StreamWriter(fs);
 				}
+				else if (curr == "-t") {
+					DryRun = true;
+				}
+				else if (curr == "-v") {
+					Verbose = true;
+				}
 				else if (!String.IsNullOrWhiteSpace(curr)) {
 					RootFolders.Add(curr);
 				}
@@ -75,5 +82,7 @@ namespace Parfait
 		public static string Par2Path = "par2";
 		public static StreamWriter Par2LogFile = null;
 		public static List<string> RootFolders = new List<string>();
+		public static bool Verbose = false;
+		public static bool DryRun = false;
 	}
 }
