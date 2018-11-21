@@ -19,6 +19,11 @@ namespace Parfait
 			Console.WriteLine("W: "+m);
 		}
 
+		public static void Info(string m)
+		{
+			Console.WriteLine("I: "+m);
+		}
+
 		public static void Debug(string m)
 		{
 			#if DEBUG

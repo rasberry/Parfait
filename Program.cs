@@ -116,83 +116,27 @@ namespace Parfait
 				Path.Combine(Options.DataFolder,noRoot)
 			);
 			string par2DataFile = dataFileRoot + ".par2";
-			string infoDataFile = dataFileRoot + ".json";
 
-
-
-			//TODO check to see if src file has changed
+			//if we're missing the par2 file create it
 			if (!File.Exists(par2DataFile)) {
-				CreatePar(file, par2DataFile);
+				Log.Info("Create\t"+par2DataFile);
+				ParHelpers.CreatePar(file, par2DataFile);
 			}
 			else {
-				VerifyFile(file, par2DataFile);
-			}
-		}
-
-		static void CreatePar(string file, string par2DataFile)
-		{
-			//0 = success
-			//1 = ?
-
-			string parDir = Path.GetDirectoryName(par2DataFile);
-			Directory.CreateDirectory(parDir);
-			string fileDir = Path.GetDirectoryName(file);
-			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
-
-			//apparently -B has to go before -a or it doesn't work
-			string args = "c "+qq+"-r1 -n1 -B \"" + fileDir + "\" -a \"" + par2DataFile + "\" \"" + file + "\"";
-			RunPar(args);
-		}
-
-		static void VerifyFile(string file, string par2DataFile)
-		{
-			//0 = success
-			//1 = damaged but can repair
-			//2 = damaged and cannot repair
-
-			string fileDir = Path.GetDirectoryName(file);
-			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
-			string args = "v "+qq+"-B \""+fileDir+"\" -a \""+par2DataFile+"\"";
-			RunPar(args);
-		}
-
-		static void RunPar(string args)
-		{
-			int exit = Exec(Options.Par2Path, args, out string stdout, out string stderr);
-
-			if (Options.Par2LogFile != null)
-			{
-				Options.Par2LogFile.WriteLine(exit + ": " + Options.Par2Path + " " + args);
-				if (!String.IsNullOrWhiteSpace(stdout)) {
-					Options.Par2LogFile.WriteLine("SO: " + stdout);
+				var par2Info = new FileInfo(par2DataFile);
+				var fileInfo = new FileInfo(file);
+				//if par2 is newer than file - verify
+				if (par2Info.LastWriteTimeUtc >= fileInfo.LastWriteTime) {
+					Log.Info("Verify\t"+par2DataFile);
+					ParHelpers.VerifyFile(file, par2DataFile);
+					//TODO do something with non success return
 				}
-				if (!String.IsNullOrWhiteSpace(stderr)) {
-					Options.Par2LogFile.WriteLine("SE: " + stderr);
+				//assume file was modified by a human and we need to re-create the par2
+				else {
+					Log.Info("ReCreate\t"+par2DataFile);
+					ParHelpers.RemoveParSet(par2DataFile);
+					ParHelpers.CreatePar(file, par2DataFile);
 				}
-			}
-		}
-
-		static int Exec(string program, string args, out string stdout,out string stderr)
-		{
-			stdout = stderr = null;
-			using (Process proc = new Process())
-			{
-				var si = new ProcessStartInfo();
-				si.FileName = program;
-				si.Arguments = args;
-				si.UseShellExecute = false;
-				si.RedirectStandardOutput = true;
-				si.RedirectStandardError = true;
-				si.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-				si.CreateNoWindow = true; //don't diplay a window
-
-				proc.StartInfo = si;
-				proc.Start();
-				proc.PriorityClass = ProcessPriorityClass.Idle;
-				stdout = proc.StandardOutput.ReadToEnd(); //The output result
-				stderr = proc.StandardError.ReadToEnd();
-				proc.WaitForExit();
-				return proc.ExitCode;
 			}
 		}
 	}
