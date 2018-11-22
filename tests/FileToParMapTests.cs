@@ -7,9 +7,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace tests
 {
 	[TestClass]
-	public class UnitTest1
+	public class FileToParMapTests
 	{
-		public UnitTest1()
+		public FileToParMapTests()
 		{
 			//var sw = new StreamWriter(File.OpenWrite("t.txt"));
 			// Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
