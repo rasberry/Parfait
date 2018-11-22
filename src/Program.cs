@@ -82,19 +82,6 @@ namespace Parfait
 			return false;
 		}
 
-		static string MapFileToPar2File(string file)
-		{
-			string root = Path.GetPathRoot(file);
-			string noRoot = String.IsNullOrWhiteSpace(root)
-				? file
-				: Path.GetRelativePath(root,file)
-			;
-			string dataFileRoot = Path.GetFullPath(
-				Path.Combine(Options.DataFolder,noRoot)
-			);
-			return dataFileRoot + ".par2";
-		}
-
 		static void UpdateFile(string file)
 		{
 			// skip empty file names
@@ -105,7 +92,7 @@ namespace Parfait
 			var info = new FileInfo(file);
 			if (info.Length < 1) { return; }
 
-			string par2DataFile = MapFileToPar2File(file);
+			string par2DataFile = Helpers.MapFileToPar2File(file,Options.DataFolder);
 
 			bool doCreate = false;
 			bool doVerify = false;
