@@ -38,6 +38,7 @@ namespace Parfait
 						Log.Error("invalid data folder");
 						return false;
 					} else {
+						// Log.Debug("a = "+args[a]);
 						DataFolder = Path.GetFullPath(args[a]);
 					}
 				}
@@ -54,6 +55,7 @@ namespace Parfait
 				}
 				else if (curr == "-t") {
 					DryRun = true;
+					Verbose = true; //not much point in a dry run if you don't know what it's doing
 				}
 				else if (curr == "-v") {
 					Verbose = true;

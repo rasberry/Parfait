@@ -118,5 +118,31 @@ namespace tests
 			Trace.WriteLine("origFile = "+origFile);
 			Assert.IsTrue("Projects/test.txt" == origFile);
 		}
+
+		[TestMethod]
+		public void MarPar2ToOrigFile_WindowsTest4()
+		{
+			if (!IsWindows()) { Assert.Inconclusive(); return; }
+
+			string dataFolder = "d:\\temp\\par2";
+			string par2File = "d:\\temp\\par2\\c$\\Projects\\test.txt.vol00+11.par2";
+
+			string origFile = Helpers.MarPar2ToOrigFile(par2File,dataFolder);
+			Trace.WriteLine("origFile = "+origFile);
+			Assert.IsTrue("c:\\Projects\\test.txt" == origFile);
+		}
+
+		[TestMethod]
+		public void MarPar2ToOrigFile_LinuxTest4()
+		{
+			if (!IsLinux()) { Assert.Inconclusive(); return; }
+
+			string dataFolder = "/tmp/par2";
+			string par2File = "/tmp/par2/Projects/test.txt.vol00+11.par2";
+
+			string origFile = Helpers.MarPar2ToOrigFile(par2File,dataFolder);
+			Trace.WriteLine("origFile = "+origFile);
+			Assert.IsTrue("/Projects/test.txt" == origFile);
+		}
 	}
 }

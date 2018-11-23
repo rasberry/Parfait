@@ -19,3 +19,10 @@ Parfait is a wrapper to create and manage par2 files so that recovery info can b
 * https://github.com/micjahn/ZXing.Net/blob/master/Source/test/src/common/reedsolomon/ReedSolomonTestCase.cs
 * https://github.com/antiduh/ErrorCorrection/tree/master/ErrorCorrection
 * https://stackoverflow.com/questions/24578536/how-to-apply-reed-solomon-algorithm-using-zxing-in-c-sharp
+
+## Example command
+`dotnet run -p src -- -d "d:\temp\par2" "."`
+
+## TODO
+* Add a summary with counts of the operations performed
+* add a quiet flag to suppress the summary

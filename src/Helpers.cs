@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace Parfait
@@ -50,7 +51,14 @@ namespace Parfait
 			if (!origFile.EndsWith(".par2")) {
 				throw new BadPathException("par2 path must end in '.par2'");
 			}
-			return origFile.Substring(0,origFile.Length - 5);
+			origFile = origFile.Substring(0,origFile.Length - 5);
+			// take care of the .vol* files - something.txt.vol00+20.par2
+			string volExt = Path.GetExtension(origFile);
+			if (volExt.StartsWith(".vol")) {
+				origFile = origFile.Substring(0,origFile.Length - volExt.Length);
+			}
+			return origFile;
+
 		}
 	}
 }

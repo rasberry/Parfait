@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-//using System.Linq;
 
 namespace Parfait
 {
 	class Program
 	{
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
-			if (!Options.ParseArgs(args)) { return; }
+			if (!Options.ParseArgs(args)) {
+				return 1; //arguments were incorrect
+			}
 			try {
 				MainMain(args);
 			} catch(Exception e) {
@@ -19,16 +20,18 @@ namespace Parfait
 				#else
 				Log.Error(e.Message);
 				#endif
+				return 2; //an exception was thrown
 			} finally {
 				if (Options.Par2LogFile != null) {
 					Options.Par2LogFile.Dispose();
 				}
 			}
+			return 0; //success
 		}
 
 		static void MainMain(string[] args)
 		{
-			// UpdateArchive();
+			UpdateArchive();
 			PruneArchive();
 		}
 
@@ -40,7 +43,7 @@ namespace Parfait
 			}
 
 			foreach(string root in Options.RootFolders) {
-				Log.Debug(root);
+				// Log.Debug(root);
 				var allFiles = EnumerateFiles(root);
 
 				foreach(string file in allFiles) {
@@ -158,11 +161,15 @@ namespace Parfait
 
 		static void PruneArchive()
 		{
-			int dataFolderLen = Options.DataFolder.Length;
 			var parFiles = EnumerateFiles(Options.DataFolder);
 			foreach(string f in parFiles) {
-				string orig = f.Substring(dataFolderLen);
-				Log.Debug(orig);
+				string orig = Helpers.MarPar2ToOrigFile(f,Options.DataFolder);
+				if (!File.Exists(orig)) {
+					Log.Info("Remove\t"+f);
+					if (!Options.DryRun) {
+						File.Delete(f);
+					}
+				}
 			}
 		}
 	}
