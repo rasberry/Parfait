@@ -24,5 +24,7 @@ Parfait is a wrapper to create and manage par2 files so that recovery info can b
 `dotnet run -p src -- -d "d:\temp\par2" "."`
 
 ## TODO
+* add a repair option
 * Add a summary with counts of the operations performed
 * add a quiet flag to suppress the summary
+* updated readme for .net version

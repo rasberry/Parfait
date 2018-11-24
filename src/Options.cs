@@ -16,6 +16,11 @@ namespace Parfait
 				+"\n  -l (log file)  log par2 commands and output to this file"
 				+"\n  -t             test mode. show info, but don't perform any actions"
 				+"\n  -v             verbose mode. show more info"
+				+"\n Repair Options:"
+				+"\n  -Ra            auto repair any file that is identified as 'CanRepair'"
+				+"\n  -RR            (!) repair files instead of re-generating the par2 info. NOTE: this will revert any changes made since par2 info was generated"
+				+"\n  -Rm (file)     manually repair a file. add additional -Rm options to repair multiple files (or use -Rl)"
+				+"\n  -Rl (listfile) manually repair list of files. files are specified in a file (one file per line)"
 			);
 		}
 
@@ -60,6 +65,19 @@ namespace Parfait
 				else if (curr == "-v") {
 					Verbose = true;
 				}
+				else if (curr == "-Ra") {
+					AutoRepair = true;
+				}
+				else if (curr == "-RR") {
+					RevertRepair = true;
+				}
+				else if (curr == "-Rm" && ++a < args.Length) {
+					RepairFiles.Add(args[a]);
+				}
+				else if (curr == "-Rl" && ++a < args.Length) {
+					var fs = File.Open(args[a],FileMode.Create,FileAccess.Write,FileShare.Read);
+					RepairFiles.AddRange(File.ReadLines(args[a]));
+				}
 				else if (!String.IsNullOrWhiteSpace(curr)) {
 					RootFolders.Add(curr);
 				}
@@ -87,5 +105,8 @@ namespace Parfait
 		public static List<string> RootFolders = new List<string>();
 		public static bool Verbose = false;
 		public static bool DryRun = false;
+		public static bool AutoRepair = false;
+		public static bool RevertRepair = false;
+		public static List<string> RepairFiles = new List<string>();
 	}
 }
