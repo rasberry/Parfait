@@ -73,7 +73,7 @@ namespace tests
 			string dataFolder = "d:\\temp\\par2";
 			string par2File = "d:\\temp\\par2\\c$\\Projects\\test.txt.par2";
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File,dataFolder);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File,dataFolder);
 			Trace.WriteLine("origFile = "+origFile);
 			Assert.IsTrue("c:\\Projects\\test.txt" == origFile);
 		}
@@ -86,7 +86,7 @@ namespace tests
 			string dataFolder = "/tmp/par2";
 			string par2File = "/tmp/par2/Projects/test.txt.par2";
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File,dataFolder);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File,dataFolder);
 			Trace.WriteLine("origFile = "+origFile);
 			Assert.IsTrue("/Projects/test.txt" == origFile);
 		}
@@ -100,7 +100,7 @@ namespace tests
 			string dataFolder = "temp\\par2";
 			string par2File = "temp\\par2\\Projects\\test.txt.par2";
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File,dataFolder);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File,dataFolder);
 			Trace.WriteLine("origFile = "+origFile);
 			Assert.IsTrue("Projects\\test.txt" == origFile);
 		}
@@ -114,7 +114,7 @@ namespace tests
 			string dataFolder = "tmp/par2";
 			string par2File = "tmp/par2/Projects/test.txt.par2";
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File,dataFolder);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File,dataFolder);
 			Trace.WriteLine("origFile = "+origFile);
 			Assert.IsTrue("Projects/test.txt" == origFile);
 		}
@@ -127,7 +127,7 @@ namespace tests
 			string dataFolder = "d:\\temp\\par2";
 			string par2File = "d:\\temp\\par2\\c$\\Projects\\test.txt.vol00+11.par2";
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File,dataFolder);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File,dataFolder);
 			Trace.WriteLine("origFile = "+origFile);
 			Assert.IsTrue("c:\\Projects\\test.txt" == origFile);
 		}
@@ -140,7 +140,7 @@ namespace tests
 			string dataFolder = "/tmp/par2";
 			string par2File = "/tmp/par2/Projects/test.txt.vol00+11.par2";
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File,dataFolder);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File,dataFolder);
 			Trace.WriteLine("origFile = "+origFile);
 			Assert.IsTrue("/Projects/test.txt" == origFile);
 		}

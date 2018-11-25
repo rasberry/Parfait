@@ -29,7 +29,7 @@ namespace Parfait
 			return Path.GetFullPath(comb);
 		}
 
-		public static string MarPar2ToOrigFile(string par2File, string dataFolder)
+		public static string MapPar2ToOrigFile(string par2File, string dataFolder)
 		{
 			if (!Path.IsPathRooted(par2File)) {
 				throw new BadPathException("par2 path must be absolute");

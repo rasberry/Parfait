@@ -14,7 +14,7 @@ namespace Parfait
 				+"\n  -d (folder)    location of par2 data folder"
 				+"\n  -x (file)      path to par2 executable"
 				+"\n  -l (log file)  log par2 commands and output to this file"
-				+"\n  -t             test mode. show info, but don't perform any actions"
+				+"\n  -t             test mode. show info, but don't perform any actions (implies -v)"
 				+"\n  -v             verbose mode. show more info"
 				+"\n Repair Options:"
 				+"\n  -Ra            auto repair any file that is identified as 'CanRepair'"

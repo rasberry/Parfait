@@ -31,8 +31,15 @@ namespace Parfait
 
 		static void MainMain(string[] args)
 		{
-			UpdateArchive();
-			PruneArchive();
+			if (Options.RepairFiles.Count > 0) {
+				// manual repair mode
+				DoRepairs();
+			}
+			else {
+				//regular create / update mode
+				UpdateArchive();
+				PruneArchive();
+			}
 		}
 
 		static void UpdateArchive()
@@ -43,7 +50,6 @@ namespace Parfait
 			}
 
 			foreach(string root in Options.RootFolders) {
-				// Log.Debug(root);
 				var allFiles = EnumerateFiles(root);
 
 				foreach(string file in allFiles) {
@@ -113,6 +119,10 @@ namespace Parfait
 					Log.Info("Verify\t"+par2DataFile);
 					doVerify = true;
 				}
+				//repair instead of re-create (!)
+				else if (Options.RevertRepair) {
+					ParHelpers.RepairFile(file,Options.DataFolder);
+				}
 				//assume file was modified by a human and we need to re-create the par2
 				else {
 					Log.Info("ReCreate\t"+par2DataFile);
@@ -163,12 +173,25 @@ namespace Parfait
 		{
 			var parFiles = EnumerateFiles(Options.DataFolder);
 			foreach(string f in parFiles) {
-				string orig = Helpers.MarPar2ToOrigFile(f,Options.DataFolder);
+				string orig = Helpers.MapPar2ToOrigFile(f,Options.DataFolder);
 				if (!File.Exists(orig)) {
 					Log.Info("Remove\t"+f);
 					if (!Options.DryRun) {
 						File.Delete(f);
 					}
+				}
+			}
+		}
+
+		static void DoRepairs()
+		{
+			foreach(string f in Options.RepairFiles)
+			{
+				string parFile = Helpers.MapFileToPar2File(f,Options.DataFolder);
+				Log.Info("Repair\t"+f);
+				if (!Options.DryRun) {
+					var result = ParHelpers.RepairFile(f,parFile);
+					HandleParResult(result,f);
 				}
 			}
 		}
