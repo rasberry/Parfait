@@ -91,6 +91,7 @@ namespace Parfait
 			return false;
 		}
 
+		//see notes/logic.txt for notes on decision tree
 		static void UpdateFile(string file)
 		{
 			// skip empty file names
@@ -106,42 +107,62 @@ namespace Parfait
 			bool doCreate = false;
 			bool doVerify = false;
 			bool doRemove = false;
+			bool doRepair = false;
 			//if we're missing the par2 file create it
 			if (!File.Exists(par2DataFile)) {
 				Log.Info("Create\t"+par2DataFile);
 				doCreate = true;
 			}
 			else {
-				var par2Info = new FileInfo(par2DataFile);
-				var fileInfo = new FileInfo(file);
-				//if par2 is newer than file - verify
-				if (par2Info.LastWriteTimeUtc >= fileInfo.LastWriteTimeUtc) {
-					Log.Info("Verify\t"+par2DataFile);
+				//repair instead of re-create (!)
+				if (Options.RevertRepair) {
+					Log.Info("Repair\t"+file);
+					doRepair = true;
 					doVerify = true;
 				}
-				//repair instead of re-create (!)
-				else if (Options.RevertRepair) {
-					ParHelpers.RepairFile(file,Options.DataFolder);
-				}
-				//assume file was modified by a human and we need to re-create the par2
 				else {
-					Log.Info("ReCreate\t"+par2DataFile);
-					doRemove = true;
-					doCreate = true;
+					//if par2 is newer than file - verify
+					var par2Info = new FileInfo(par2DataFile);
+					var fileInfo = new FileInfo(file);
+					if (par2Info.LastWriteTimeUtc >= fileInfo.LastWriteTimeUtc) {
+						Log.Info("Verify\t"+par2DataFile);
+						doVerify = true;
+						doRepair = Options.AutoRepair;
+					}
+					//assume file was modified by a human and we need to re-create the par2
+					else {
+						Log.Info("ReCreate\t"+par2DataFile);
+						doRemove = true;
+						doCreate = true;
+					}
 				}
 			}
 
 			if (Options.DryRun) { return; }
+
 			if (doRemove) {
 				ParHelpers.RemoveParSet(par2DataFile);
 			}
+			//doCreate must be after doRemove
 			if (doCreate) {
 				var result = ParHelpers.CreatePar(file, par2DataFile);
 				HandleParResult(result,file);
 			}
-			else if (doVerify) {
-				var result = ParHelpers.VerifyFile(file, par2DataFile);
-				HandleParResult(result,file);
+
+			var verify = ParHelpers.ParResult.Success;
+			if (doVerify) {
+				verify = ParHelpers.VerifyFile(file, par2DataFile);
+				HandleParResult(verify,file);
+			}
+			//doRepair must be after doVerify
+			if (doRepair) {
+				if (verify == ParHelpers.ParResult.CanRepair) {
+					var result = ParHelpers.RepairFile(file,Options.DataFolder);
+					HandleParResult(result,file);
+				}
+				else {
+					HandleParResult(verify,file);
+				}
 			}
 		}
 

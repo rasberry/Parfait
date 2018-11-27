@@ -1,0 +1,32 @@
+##### Input signals
+e high
+n high 
+r high
+a high
+##### Output signals
+C high 1
+V high 1
+R high 1
+X high 1
+##### Flags
+0
+1
+3
+0
+##### Truth Table (enra CVRX)
+0000 1000
+0001 1000
+0010 1000
+0011 1000
+0100 1000
+0101 1000
+0110 1000
+0111 1000
+1000 1001
+1001 1001
+1010 0110
+1011 0110
+1100 0100
+1101 0110
+1110 0110
+1111 0110
