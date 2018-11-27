@@ -5,31 +5,15 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Parfait;
 
-namespace tests
+namespace Parfait.Tests
 {
 	[TestClass]
 	public class FileToParMapTests
 	{
-		public FileToParMapTests()
-		{
-			//var sw = new StreamWriter(File.OpenWrite("t.txt"));
-			// Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
-		}
-
-		static bool IsWindows() {
-			return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-		}
-		static bool IsLinux() {
-			return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-		}
-		static bool IsMac() {
-			return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-		}
-
 		[TestMethod]
 		public void MapFileToPar2File_WindowsTest1()
 		{
-			if (!IsWindows()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsWindows()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "d:\\temp\\par2";
 			string file = "d:\\Projects\\test.txt";
@@ -42,7 +26,7 @@ namespace tests
 		[TestMethod]
 		public void MapFileToPar2File_WindowsTest2()
 		{
-			if (!IsWindows()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsWindows()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "d:\\temp\\par2";
 			string file = "c:\\Projects\\test.txt";
@@ -55,7 +39,7 @@ namespace tests
 		[TestMethod]
 		public void MapFileToPar2File_LinuxTest1()
 		{
-			if (!IsLinux()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsLinux()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "/tmp/par2";
 			string file = "/Projects/test.txt";
@@ -68,7 +52,7 @@ namespace tests
 		[TestMethod]
 		public void MarPar2ToOrigFile_WindowsTest1()
 		{
-			if (!IsWindows()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsWindows()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "d:\\temp\\par2";
 			string par2File = "d:\\temp\\par2\\c$\\Projects\\test.txt.par2";
@@ -81,7 +65,7 @@ namespace tests
 		[TestMethod]
 		public void MarPar2ToOrigFile_LinuxTest1()
 		{
-			if (!IsLinux()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsLinux()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "/tmp/par2";
 			string par2File = "/tmp/par2/Projects/test.txt.par2";
@@ -95,7 +79,7 @@ namespace tests
 		[ExpectedException(typeof(BadPathException))]
 		public void MarPar2ToOrigFile_WindowsTest3()
 		{
-			if (!IsWindows()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsWindows()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "temp\\par2";
 			string par2File = "temp\\par2\\Projects\\test.txt.par2";
@@ -109,7 +93,7 @@ namespace tests
 		[ExpectedException(typeof(BadPathException))]
 		public void MarPar2ToOrigFile_LinuxTest3()
 		{
-			if (!IsLinux()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsLinux()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "tmp/par2";
 			string par2File = "tmp/par2/Projects/test.txt.par2";
@@ -122,7 +106,7 @@ namespace tests
 		[TestMethod]
 		public void MarPar2ToOrigFile_WindowsTest4()
 		{
-			if (!IsWindows()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsWindows()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "d:\\temp\\par2";
 			string par2File = "d:\\temp\\par2\\c$\\Projects\\test.txt.vol00+11.par2";
@@ -135,7 +119,7 @@ namespace tests
 		[TestMethod]
 		public void MarPar2ToOrigFile_LinuxTest4()
 		{
-			if (!IsLinux()) { Assert.Inconclusive(); return; }
+			if (!TestHelpers.IsLinux()) { Assert.Inconclusive(); return; }
 
 			string dataFolder = "/tmp/par2";
 			string par2File = "/tmp/par2/Projects/test.txt.vol00+11.par2";
