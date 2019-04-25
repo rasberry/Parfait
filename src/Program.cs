@@ -74,7 +74,7 @@ namespace Parfait
 
 			//if we're missing the par2 file create it
 			if (!File.Exists(par2DataFile)) {
-				Log.Info("Create\t"+par2DataFile);
+				Log.Info("Create\t"+file);
 				doCreate = true;
 			}
 			else {
@@ -82,12 +82,12 @@ namespace Parfait
 				var fileInfo = new FileInfo(file);
 				//if par2 is newer than file - verify
 				if (par2Info.LastWriteTimeUtc >= fileInfo.LastWriteTimeUtc) {
-					Log.Info("Verify\t"+par2DataFile);
+					Log.Info("Verify\t"+file);
 					doVerify = true;
 				}
 				//assume file was modified by a human and we need to re-create the par2
 				else {
-					Log.Info("ReCreate\t"+par2DataFile);
+					Log.Info("ReCreate\t"+file);
 					doRemove = true;
 					doCreate = true;
 				}
@@ -113,7 +113,7 @@ namespace Parfait
 				var result = ParHelpers.RepairFile(file, par2DataFile);
 				HandleParResult(result,file);
 				if (result == ParHelpers.ParResult.Success) {
-					Log.Message("Reparied "+file);
+					Log.Message("Reparied\t"+file);
 					//the par2 file gets deleted if the repair was successfull
 					var result2 = ParHelpers.CreatePar(file, par2DataFile);
 					HandleParResult(result2,file);
@@ -149,13 +149,15 @@ namespace Parfait
 		{
 			string par2Folder = Path.Combine(root,Options.DataFolder);
 			var parFiles = Helpers.EnumerateFiles(par2Folder, allowHidden:true);
+			var noDups = new HashSet<string>();
 			foreach(string p in parFiles) {
 				string orig = Helpers.MarPar2ToOrigFile(p);
 				if (!File.Exists(orig)) {
-					Log.Info("Remove\t" + p);
-					if (!Options.DryRun) {
-						File.Delete(p);
+					if (!noDups.Contains(orig)) {
+						Log.Info("Pruned\t"+orig);
+						noDups.Add(orig);
 					}
+					Helpers.DeleteFile(p);
 				}
 			}
 		}

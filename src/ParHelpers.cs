@@ -58,7 +58,7 @@ namespace Parfait
 			foreach(string f in fileList) {
 				string name = Path.GetFileName(f);
 				if (name.StartsWith(root)) {
-					File.Delete(f);
+					Helpers.DeleteFile(f);
 				}
 			}
 		}
@@ -66,15 +66,13 @@ namespace Parfait
 		static int RunPar(string args)
 		{
 			int exit = Exec(Options.Par2ExePath, args, out string stdout, out string stderr);
-			if (Options.Par2LogFile != null)
-			{
-				Options.Par2LogFile.WriteLine(exit + ": " + Options.Par2ExePath + " " + args);
-				if (!String.IsNullOrWhiteSpace(stdout)) {
-					Options.Par2LogFile.WriteLine("SO: " + stdout);
-				}
-				if (!String.IsNullOrWhiteSpace(stderr)) {
-					Options.Par2LogFile.WriteLine("SE: " + stderr);
-				}
+			
+			Log.File(exit + ": " + Options.Par2ExePath + " " + args);
+			if (!String.IsNullOrWhiteSpace(stdout)) {
+				Log.File("SO: " + stdout);
+			}
+			if (!String.IsNullOrWhiteSpace(stderr)) {
+				Log.File("SE: " + stderr);
 			}
 			return exit;
 		}

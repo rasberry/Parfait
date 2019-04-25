@@ -48,6 +48,10 @@ namespace Parfait
 
 		public static IEnumerable<string> EnumerateFiles(string root, bool recurse = false, bool allowHidden = false)
 		{
+			if (!Directory.Exists(root)) {
+				yield break;
+			}
+
 			//had to implement a manual loop because the regular .net one doesn't skip hidden files/folders
 			var files = Directory.EnumerateFiles(root,"*",SearchOption.TopDirectoryOnly);
 			foreach(string f in files) {
@@ -107,6 +111,14 @@ namespace Parfait
 				if (ix != -1) { return true; }
 			}
 			return false;
+		}
+
+		public static void DeleteFile(string path)
+		{
+			Log.File("I: Delete\t"+path);
+			if (!Options.DryRun) {
+				File.Delete(path);
+			}
 		}
 	}
 }
