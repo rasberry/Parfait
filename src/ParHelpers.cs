@@ -29,7 +29,6 @@ namespace Parfait
 			//apparently -B has to go before -a or it doesn't work
 			string args = "c "+qq+"-r1 -n1 -B \"" + fileDir + "\" -a \"" + par2DataFile + "\" \"" + file + "\"";
 			int ret = RunPar(args);
-			//TODO do something with non success returns
 			return (ParResult)ret;
 		}
 
@@ -39,7 +38,15 @@ namespace Parfait
 			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
 			string args = "v "+qq+"-B \""+fileDir+"\" -a \""+par2DataFile+"\"";
 			int ret = RunPar(args);
-			//TODO do something with non success returns
+			return (ParResult)ret;
+		}
+
+		public static ParResult RepairFile(string file, string par2DataFile)
+		{
+			string fileDir = Path.GetDirectoryName(file);
+			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
+			string args = "r "+qq+"-p -B \""+fileDir+"\" -a \""+par2DataFile+"\"";
+			int ret = RunPar(args);
 			return (ParResult)ret;
 		}
 
@@ -58,10 +65,10 @@ namespace Parfait
 
 		static int RunPar(string args)
 		{
-			int exit = Exec(Options.Par2Path, args, out string stdout, out string stderr);
+			int exit = Exec(Options.Par2ExePath, args, out string stdout, out string stderr);
 			if (Options.Par2LogFile != null)
 			{
-				Options.Par2LogFile.WriteLine(exit + ": " + Options.Par2Path + " " + args);
+				Options.Par2LogFile.WriteLine(exit + ": " + Options.Par2ExePath + " " + args);
 				if (!String.IsNullOrWhiteSpace(stdout)) {
 					Options.Par2LogFile.WriteLine("SO: " + stdout);
 				}
@@ -97,4 +104,3 @@ namespace Parfait
 		}
 	}
 }
-

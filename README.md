@@ -1,12 +1,24 @@
 # Parfait #
-Semi-automated par2 creation / management tool
+Semi-automated par2 creation / management tool.
+This tool creates par2 data files in a hidden .par2 folder that can be used to fix the original in case of corruption.
+
+The mode of operation is defined based on the state of the folder
+* if no .par2 folder is found then par2 files are created for every regular file
+* par2 files are created for any new regular files
+* regular files are checked agains existing par2 files and any missmatches are written to the log
+* automatic recovery can be enabled by using the -a / --auto flag
+* by default missing regular files 
 
 ## Usage ##
-```bash
-Usage parfait.sh [options] (folder) [...]
+```
+Usage: Parfait [options] (root folder) [...]
  Options:
- -d (foler)      location of par2 data folder
- -l (date)       only update files newer than this date/time
+  -t             test mode. show info, but don't perform any actions
+  -a             enable automatic recovery
+  -r             recurse into sub-folders
+  -v             verbose mode. show more info
+  -l (log file)  log output to this file
+  -x (file)      path to par2 executable
 ```
 
 ## Design ##

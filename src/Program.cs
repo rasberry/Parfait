@@ -31,61 +31,31 @@ namespace Parfait
 
 		static void MainMain(string[] args)
 		{
-			UpdateArchive();
-			PruneArchive();
-		}
-
-		static void UpdateArchive()
-		{
-			// make sure data folder exists
-			if (!Directory.Exists(Options.DataFolder)) {
-				Directory.CreateDirectory(Options.DataFolder);
-			}
-
 			foreach(string root in Options.RootFolders) {
-				// Log.Debug(root);
-				var allFiles = EnumerateFiles(root);
+				// make sure data folder exists
+				string dataFolder = Path.Combine(root,Options.DataFolder);
+				if (!Directory.Exists(dataFolder)) {
+					Directory.CreateDirectory(dataFolder);
+				}
 
+				//main processing
+				var allFiles = Helpers.EnumerateFiles(root, Options.Recurse);
 				foreach(string file in allFiles) {
-					UpdateFile(file);
+					UpdateDataFile(file);
+				}
+
+				//prune par2 files if original is missing
+				PruneArchive(root);
+				if (Options.Recurse) {
+					var allFolders = Helpers.EnumerateFolders(root, true);
+					foreach(string folder in allFolders) {
+						PruneArchive(folder);
+					}
 				}
 			}
 		}
 
-		static IEnumerable<string> EnumerateFiles(string root)
-		{
-			var files = Directory.EnumerateFiles(root,"*",SearchOption.TopDirectoryOnly);
-			foreach(string f in files) {
-				if (!IsHidden(f)) { yield return f; }
-			}
-			var folders = Directory.EnumerateDirectories(root,"*",SearchOption.TopDirectoryOnly);
-			foreach(string d in folders) {
-				if (!IsHidden(d)) {
-					var deepFiles = EnumerateFiles(d);
-					foreach(string df in deepFiles) { yield return df; }
-				}
-			}
-		}
-
-		static string[] _hideChecks = new string[] {
-			Path.DirectorySeparatorChar+".",
-			Path.AltDirectorySeparatorChar+"."
-		};
-		static bool IsHidden(string item)
-		{
-			var att = File.GetAttributes(item);
-			if (att.HasFlag(FileAttributes.Hidden)) {
-				return true;
-			}
-
-			foreach(string check in _hideChecks) {
-				int ix = item.IndexOf(check);
-				if (ix != -1) { return true; }
-			}
-			return false;
-		}
-
-		static void UpdateFile(string file)
+		static void UpdateDataFile(string file)
 		{
 			// skip empty file names
 			if (String.IsNullOrWhiteSpace(file)) { return; }
@@ -95,11 +65,13 @@ namespace Parfait
 			var info = new FileInfo(file);
 			if (info.Length < 1) { return; }
 
-			string par2DataFile = Helpers.MapFileToPar2File(file,Options.DataFolder);
+			string par2DataFile = Helpers.MapFileToPar2File(file);
 
 			bool doCreate = false;
 			bool doVerify = false;
 			bool doRemove = false;
+			bool doRepair = false;
+
 			//if we're missing the par2 file create it
 			if (!File.Exists(par2DataFile)) {
 				Log.Info("Create\t"+par2DataFile);
@@ -121,17 +93,31 @@ namespace Parfait
 				}
 			}
 
-			if (Options.DryRun) { return; }
-			if (doRemove) {
+			if (!Options.DryRun && doRemove) {
 				ParHelpers.RemoveParSet(par2DataFile);
 			}
-			if (doCreate) {
+			if (!Options.DryRun && doCreate) {
 				var result = ParHelpers.CreatePar(file, par2DataFile);
 				HandleParResult(result,file);
 			}
-			else if (doVerify) {
+			//verify is read-only so we can do this on a dry-run
+			if (!doCreate && doVerify) {
 				var result = ParHelpers.VerifyFile(file, par2DataFile);
 				HandleParResult(result,file);
+
+				if (result == ParHelpers.ParResult.CanRepair) {
+					doRepair = Options.AutoRecover;
+				}
+			}
+			if (!Options.DryRun && doRepair) {
+				var result = ParHelpers.RepairFile(file, par2DataFile);
+				HandleParResult(result,file);
+				if (result == ParHelpers.ParResult.Success) {
+					Log.Message("Reparied "+file);
+					//the par2 file gets deleted if the repair was successfull
+					var result2 = ParHelpers.CreatePar(file, par2DataFile);
+					HandleParResult(result2,file);
+				}
 			}
 		}
 
@@ -141,9 +127,9 @@ namespace Parfait
 			{
 			case ParHelpers.ParResult.Success: return;
 			case ParHelpers.ParResult.CanRepair:
-				Log.Message("File can be repaired\t"+file); return;
+				Log.Message("File is damaged and can be repaired\t"+file); return;
 			case ParHelpers.ParResult.CannotRepair:
-				Log.Warning("File CANNOT be repaired\t"+file); return;
+				Log.Warning("File is damaged and CANNOT be repaired\t"+file); return;
 			case ParHelpers.ParResult.BadArguments:
 				Log.Error("Bad arguments passed to Par2"); return;
 			case ParHelpers.ParResult.NoEnoughData:
@@ -159,15 +145,16 @@ namespace Parfait
 			}
 		}
 
-		static void PruneArchive()
+		static void PruneArchive(string root)
 		{
-			var parFiles = EnumerateFiles(Options.DataFolder);
-			foreach(string f in parFiles) {
-				string orig = Helpers.MarPar2ToOrigFile(f,Options.DataFolder);
+			string par2Folder = Path.Combine(root,Options.DataFolder);
+			var parFiles = Helpers.EnumerateFiles(par2Folder, allowHidden:true);
+			foreach(string p in parFiles) {
+				string orig = Helpers.MarPar2ToOrigFile(p);
 				if (!File.Exists(orig)) {
-					Log.Info("Remove\t"+f);
+					Log.Info("Remove\t" + p);
 					if (!Options.DryRun) {
-						File.Delete(f);
+						File.Delete(p);
 					}
 				}
 			}

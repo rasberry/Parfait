@@ -9,13 +9,17 @@ namespace Parfait
 		static void Usage()
 		{
 			Log.Message(""
-				+  "Usage: "+nameof(Parfait)+" [options] (root folder) [...]"
+				+  "Usage: "+nameof(Parfait)+" [options] (folder) [...]"
 				+"\n Options:"
-				+"\n  -d (folder)    location of par2 data folder"
-				+"\n  -x (file)      path to par2 executable"
-				+"\n  -l (log file)  log par2 commands and output to this file"
 				+"\n  -t             test mode. show info, but don't perform any actions"
+				+"\n  -r             recurse into sub-folders"
+				+"\n  -hf            include hidden files"
+				+"\n  -hd            include hidden folders"
+				+"\n  -a             enable automatic recovery"
 				+"\n  -v             verbose mode. show more info"
+				+"\n  -l (log file)  log output to this file"
+				+"\n  -x (file)      path to par2 executable"
+				+"\n  -h / --help    show this help"
 			);
 		}
 
@@ -33,18 +37,9 @@ namespace Parfait
 					Usage();
 					return false;
 				}
-				else if (curr == "-d" && ++a < args.Length) {
-					if (String.IsNullOrWhiteSpace(args[a])) {
-						Log.Error("invalid data folder");
-						return false;
-					} else {
-						// Log.Debug("a = "+args[a]);
-						DataFolder = Path.GetFullPath(args[a]);
-					}
-				}
 				else if (curr == "-x" && ++a < args.Length) {
-					Par2Path = args[a];
-					if (!File.Exists(Par2Path ?? "")) {
+					Par2ExePath = args[a];
+					if (!File.Exists(Par2ExePath ?? "")) {
 						Log.Error("par2 executable not found");
 						return false;
 					}
@@ -60,13 +55,25 @@ namespace Parfait
 				else if (curr == "-v") {
 					Verbose = true;
 				}
+				else if (curr == "-a") {
+					AutoRecover = true;
+				}
+				else if (curr == "-r") {
+					Recurse = true;
+				}
+				else if (curr == "-hf") {
+					IncludeHiddenFiles = true;
+				}
+				else if (curr == "-hd") {
+					IncludeHiddenFolders = true;
+				}
 				else if (!String.IsNullOrWhiteSpace(curr)) {
 					RootFolders.Add(curr);
 				}
 			}
 
 			if (RootFolders.Count < 1) {
-				Log.Error("you must specify at least one root folder");
+				Log.Error("you must specify at least one folder");
 				return false;
 			}
 			else {
@@ -81,11 +88,15 @@ namespace Parfait
 			return true;
 		}
 
-		public static string DataFolder = null;
-		public static string Par2Path = "par2";
+		public static string Par2ExePath = "par2";
 		public static StreamWriter Par2LogFile = null;
 		public static List<string> RootFolders = new List<string>();
 		public static bool Verbose = false;
 		public static bool DryRun = false;
+		public static bool AutoRecover = false;
+		public static bool Recurse = false;
+		public static bool IncludeHiddenFiles = false;
+		public static bool IncludeHiddenFolders = false;
+		public static string DataFolder = ".par2";
 	}
 }
