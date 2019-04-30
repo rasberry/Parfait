@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
+
+//let the test project access internal entities
+[assembly:InternalsVisibleTo("Parfait.Test")]
 
 namespace Parfait
 {
-	class Program
+	internal class Program
 	{
 		static int Main(string[] args)
 		{
-			if (!Options.ParseArgs(args)) {
-				return 1; //arguments were incorrect
-			}
 			try {
-				MainMain(args);
+				return MainMain(args);
 			} catch(Exception e) {
 				#if DEBUG
 				Log.Error(e.ToString());
@@ -26,11 +27,14 @@ namespace Parfait
 					Options.Par2LogFile.Dispose();
 				}
 			}
-			return 0; //success
 		}
 
-		static void MainMain(string[] args)
+		internal static int MainMain(string[] args)
 		{
+			if (!Options.ParseArgs(args)) {
+				return 1; //arguments were incorrect
+			}
+
 			foreach(string root in Options.RootFolders) {
 				// make sure data folder exists
 				string dataFolder = Path.Combine(root,Options.DataFolder);
@@ -53,6 +57,7 @@ namespace Parfait
 					}
 				}
 			}
+			return 0; //success
 		}
 
 		static void UpdateDataFile(string file)

@@ -60,7 +60,6 @@ namespace Parfait.Test
 		[TestMethod]
 		public void MapFileToPar2File_RelativePath2()
 		{
-			string dataFolder = ".par2";
 			string file = IsWindows
 				? "where\\test.txt"
 				: "where/test.txt"

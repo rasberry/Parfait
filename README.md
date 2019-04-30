@@ -38,3 +38,5 @@ Parfait is a wrapper to create and manage par2 files so that recovery info can b
 ## TODO
 * Add a summary with counts of the operations performed
 * add a quiet flag to suppress the summary
+* add flag to turn off recreate (manual mode) and only verify
+  * maybe add input file with instructions for each file specified (re-create / restore / do nothing)

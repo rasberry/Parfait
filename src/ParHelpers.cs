@@ -92,8 +92,8 @@ namespace Parfait
 				si.CreateNoWindow = true; //don't diplay a window
 
 				proc.StartInfo = si;
-				proc.Start();
 				proc.PriorityClass = ProcessPriorityClass.Idle;
+				proc.Start();
 				stdout = proc.StandardOutput.ReadToEnd(); //The output result
 				stderr = proc.StandardError.ReadToEnd();
 				proc.WaitForExit();

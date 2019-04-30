@@ -342,3 +342,4 @@ ASALocalRun/
 .vscode
 test.sh
 *.txt
+TestFile.*
