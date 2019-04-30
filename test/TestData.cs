@@ -48,6 +48,20 @@ namespace Parfait.Test
 			Directory.Delete(dir,true);
 		}
 
+		public static void ModifyFileData(string file, DateTimeOffset? lastWriteTime = null)
+		{
+			using (var fs = File.Open(file,FileMode.Open,FileAccess.ReadWrite,FileShare.Read)) {
+				int len = (int)(fs.Length & int.MaxValue);
+				for(int i=0; i<5; i++) {
+					long next = Rnd.Next(len);
+					fs.Seek(next,SeekOrigin.Begin);
+					fs.WriteByte((byte)'A');
+				}
+			}
+		}
+
+		static Random Rnd = new Random();
+
 		public const string TestFileGzName = "TestFile.txt.gz";
 	}
 }

@@ -40,6 +40,22 @@ namespace Parfait.Test
 			TestData.DeleteFolder(folder);
 		}
 
+		[TestMethod]
+		public void RecreateTest1()
+		{
+			ClearOptions();
+			string folder = TestData.SetupTestFolder();
+
+			int result = Program.MainMain(new string[] { folder });
+			Assert.AreEqual(0,result);
+			string file = Path.Combine(folder,TestData.TestFileGzName);
+			TestData.ModifyFileData(file);
+			//TODO
+			//rename resulting par2 files
+			//run mainain again
+			//compare - files should be different
+		}
+
 		//TODO test that changing original file causes recreate
 		//TODO test that changing original before causes restore
 		//TODO test that removing original also removes par2 files
