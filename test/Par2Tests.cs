@@ -16,11 +16,22 @@ namespace Parfait.Test
 			constructor.Invoke(null, null);
 		}
 
+		static int RunMain(string[] args)
+		{
+			try {
+				return Program.MainMain(args);
+			} finally {
+				if (Options.Par2LogFile != null) {
+					Options.Par2LogFile.Dispose();
+				}
+			}
+		}
+
 		[TestMethod]
 		public void BadInputsReturnOne()
 		{
 			ClearOptions();
-			int result = Program.MainMain(new string[] { "badinput" });
+			int result = RunMain(new string[] { "badinput" });
 			Assert.AreEqual(1,result);
 		}
 
@@ -28,36 +39,124 @@ namespace Parfait.Test
 		public void CreatePar2Files()
 		{
 			ClearOptions();
-			string folder = TestData.SetupTestFolder();
-			
-			int result = Program.MainMain(new string[] { folder });
-			Assert.AreEqual(0,result);
-			string par2File = Path.Combine(folder,".par2","TestFile.txt.gz.par2");
-			Assert.IsTrue(File.Exists(par2File));
-			string par2FileVol = Path.Combine(folder,".par2","TestFile.txt.gz.vol0+2.par2");
-			Assert.IsTrue(File.Exists(par2FileVol));
-			
-			TestData.DeleteFolder(folder);
+			using (var setup = TestData.SetupTestFolder())
+			{
+				string folder = setup.Folder;
+				int result = RunMain(new string[] { folder });
+				Assert.AreEqual(0,result);
+				string par2File = TestData.FileNamePar2(folder);
+				Assert.IsTrue(File.Exists(par2File));
+				string par2FileVol = TestData.FileNamePar2Vol(folder);
+				Assert.IsTrue(File.Exists(par2FileVol));
+			}
 		}
 
 		[TestMethod]
 		public void RecreateTest1()
 		{
 			ClearOptions();
-			string folder = TestData.SetupTestFolder();
+			using (var setup = TestData.SetupTestFolder())
+			{
+				string folder = setup.Folder;
 
-			int result = Program.MainMain(new string[] { folder });
-			Assert.AreEqual(0,result);
-			string file = Path.Combine(folder,TestData.TestFileGzName);
-			TestData.ModifyFileData(file);
-			//TODO
-			//rename resulting par2 files
-			//run mainain again
-			//compare - files should be different
+				//create regular par2 files
+				int result = RunMain(new string[] { folder });
+				Assert.AreEqual(0,result);
+				string par2File = TestData.FileNamePar2(folder);
+				Assert.IsTrue(File.Exists(par2File));
+				string par2FileVol = TestData.FileNamePar2Vol(folder);
+				Assert.IsTrue(File.Exists(par2FileVol));
+
+				//change the contents or original
+				string file = Path.Combine(folder,TestData.TestFileGzName);
+				TestData.ModifyFileData(file);
+
+				//save off the par files for later
+				File.Copy(par2File,par2File+".1");
+				File.Copy(par2FileVol,par2FileVol+".1");
+
+				//run again
+				int result2 = RunMain(new string[] { folder });
+				Assert.AreEqual(0,result2);
+
+				//compare - files should be different
+				Assert.IsFalse(TestData.AreFilesEqual(par2File,par2File+".1"));
+				Assert.IsFalse(TestData.AreFilesEqual(par2FileVol,par2FileVol+".1"));
+			}
 		}
 
-		//TODO test that changing original file causes recreate
-		//TODO test that changing original before causes restore
-		//TODO test that removing original also removes par2 files
+
+		[TestMethod]
+		public void RestoreTest1()
+		{
+			ClearOptions();
+			using (var setup = TestData.SetupTestFolder())
+			using (var setup2 = TestData.SetupTestFolder())
+			{
+				string folder = setup.Folder;
+				string folder2 = setup2.Folder;
+
+				//create regular par2 files
+				int result = RunMain(new string[] { folder });
+				Assert.AreEqual(0,result);
+				string par2File = TestData.FileNamePar2(folder);
+				Assert.IsTrue(File.Exists(par2File));
+				string par2FileVol = TestData.FileNamePar2Vol(folder);
+				Assert.IsTrue(File.Exists(par2FileVol));
+
+				//change the contents or original
+				string file = Path.Combine(folder,TestData.TestFileGzName);
+				TestData.ModifyFileData(file,DateTimeOffset.Now.AddHours(-1));
+
+				//original should be different
+				string file2 = TestData.MakeTestFileAs(folder2,TestData.TestFileGzName+".1");
+				Assert.IsTrue(TestData.AreFilesEqual(file,file2));
+
+				//save off the par files for later
+				File.Copy(par2File,par2File+".1");
+				File.Copy(par2FileVol,par2FileVol+".1");
+
+				//run again with auto heal
+				int result2 = RunMain(new string[] { folder, "-a" });
+				Assert.AreEqual(0,result2);
+
+				//compare - files should be same
+				Assert.IsTrue(TestData.AreFilesEqual(par2File,par2File+".1"));
+				Assert.IsTrue(TestData.AreFilesEqual(par2FileVol,par2FileVol+".1"));
+
+				//original should be he same
+				Assert.IsTrue(TestData.AreFilesEqual(file2,file));
+			}
+		}
+
+		[TestMethod]
+		public void RemoveTest1()
+		{
+			ClearOptions();
+			using (var setup = TestData.SetupTestFolder())
+			{
+				string folder = setup.Folder;
+
+				//create regular par2 files
+				int result = RunMain(new string[] { folder });
+				Assert.AreEqual(0,result);
+				string par2File = TestData.FileNamePar2(folder);
+				Assert.IsTrue(File.Exists(par2File));
+				string par2FileVol = TestData.FileNamePar2Vol(folder);
+				Assert.IsTrue(File.Exists(par2FileVol));
+
+				//remove original
+				string file = Path.Combine(folder,TestData.TestFileGzName);
+				File.Delete(file);
+
+				//run again
+				int result2 = RunMain(new string[] { folder });
+				Assert.AreEqual(0,result2);
+
+				//par2 files should also be gone
+				Assert.IsFalse(File.Exists(par2File));
+				Assert.IsFalse(File.Exists(par2FileVol));
+			}
+		}
 	}
 }

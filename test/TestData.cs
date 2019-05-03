@@ -32,7 +32,34 @@ namespace Parfait.Test
 			return raw;
 		}}
 
-		public static string SetupTestFolder()
+		public interface IFolderSetup : IDisposable
+		{
+			string Folder { get; }
+		}
+		
+		public static IFolderSetup SetupTestFolder(bool keep = false)
+		{
+			return new TestFolderSetup(keep);
+		}
+
+		class TestFolderSetup : IFolderSetup
+		{
+			public TestFolderSetup(bool keep)
+			{
+				Folder = CreateTestFolder();
+				Keep = keep;
+			}
+			public string Folder { get; private set; }
+			public bool Keep;
+			public void Dispose()
+			{
+				if (!Keep && Folder != null) {
+					DeleteFolder(Folder);
+				}
+			}
+		}
+
+		static string CreateTestFolder()
 		{
 			string dir = Path.GetTempFileName();
 			if (File.Exists(dir)) { File.Delete(dir); }
@@ -42,22 +69,62 @@ namespace Parfait.Test
 			return dir;
 		}
 
-		public static void DeleteFolder(string dir)
+		static void DeleteFolder(string dir)
 		{
 			if (!Directory.Exists(dir)) { return; }
 			Directory.Delete(dir,true);
 		}
 
+		const int HowManyChanges = 1;
 		public static void ModifyFileData(string file, DateTimeOffset? lastWriteTime = null)
 		{
 			using (var fs = File.Open(file,FileMode.Open,FileAccess.ReadWrite,FileShare.Read)) {
 				int len = (int)(fs.Length & int.MaxValue);
-				for(int i=0; i<5; i++) {
+				for(int i=0; i<HowManyChanges; i++) {
 					long next = Rnd.Next(len);
 					fs.Seek(next,SeekOrigin.Begin);
 					fs.WriteByte((byte)'A');
 				}
 			}
+
+			if (lastWriteTime != null) {
+				File.SetLastWriteTimeUtc(file,lastWriteTime.Value.UtcDateTime);
+			}
+		}
+
+		public static string MakeTestFileAs(string folder, string name)
+		{
+			string file = Path.Combine(folder,name);
+			File.WriteAllBytes(file,TestFileGzip);
+			return file;
+		}
+
+		public static string FileNamePar2(string folder)
+		{
+			string par2File = Path.Combine(folder,".par2","TestFile.txt.gz.par2");
+			return par2File;
+		}
+		public static string FileNamePar2Vol(string folder)
+		{
+			string par2FileVol = Path.Combine(folder,".par2","TestFile.txt.gz.vol0+2.par2");
+			return par2FileVol;
+		}
+
+		public static bool AreFilesEqual(string one,string two)
+		{
+			if (!File.Exists(one)) { return false; }
+			if (!File.Exists(two)) { return false; }
+			using(var fs1 = File.Open(one,FileMode.Open,FileAccess.Read,FileShare.Read))
+			using(var fs2 = File.Open(two,FileMode.Open,FileAccess.Read,FileShare.Read))
+			{
+				if (fs1.Length != fs2.Length) { return false; }
+				int b1,b2;
+				do {
+					b1 = fs1.ReadByte();
+					b2 = fs2.ReadByte();
+				} while (b1 == b2 && b1 != -1 && b2 != -1);
+			}
+			return true;
 		}
 
 		static Random Rnd = new Random();

@@ -16,18 +16,17 @@ namespace Parfait
 			return par2File;
 		}
 
-		public static string MarPar2ToOrigFile(string par2File)
+		public static string MapPar2ToOrigFile(string par2File)
 		{
 			if (!Path.IsPathRooted(par2File)) {
 				throw new BadPathException("path must be rooted");
 			}
 
-			string origFile = par2File;
-
-			if (!origFile.EndsWith(".par2")) {
+			if (!par2File.EndsWith(".par2")) {
 				throw new BadPathException("par2 path must end in '.par2'");
 			}
-			origFile = origFile.Substring(0,origFile.Length - 5);
+
+			string origFile = par2File.Substring(0,par2File.Length - 5);
 
 			// take care of the .vol* files - something.txt.vol00+20.par2
 			string volExt = Path.GetExtension(origFile);

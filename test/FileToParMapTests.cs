@@ -82,7 +82,7 @@ namespace Parfait.Test
 				: "/temp/.par2/test.txt.par2"
 			;
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File);
 			Trace.WriteLine("origFile = "+origFile);
 			string test = IsWindows
 				? "d:\\temp\\test.txt"
@@ -100,7 +100,7 @@ namespace Parfait.Test
 				: "temp/.par2/test.txt.par2"
 			;
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File);
 			Trace.WriteLine("origFile = "+origFile);
 			string test = IsWindows
 				? "temp\\test.txt"
@@ -117,7 +117,7 @@ namespace Parfait.Test
 				: "/temp/.par2/test.txt.vol00+11.par2"
 			;
 
-			string origFile = Helpers.MarPar2ToOrigFile(par2File);
+			string origFile = Helpers.MapPar2ToOrigFile(par2File);
 			Trace.WriteLine("origFile = "+origFile);
 			string test = IsWindows
 				? "d:\\temp\\test.txt"

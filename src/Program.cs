@@ -156,7 +156,8 @@ namespace Parfait
 			var parFiles = Helpers.EnumerateFiles(par2Folder, allowHidden:true);
 			var noDups = new HashSet<string>();
 			foreach(string p in parFiles) {
-				string orig = Helpers.MarPar2ToOrigFile(p);
+				if (!p.EndsWith(".par2")) { continue; }
+				string orig = Helpers.MapPar2ToOrigFile(p);
 				if (!File.Exists(orig)) {
 					if (!noDups.Contains(orig)) {
 						Log.Info("Pruned\t"+orig);
