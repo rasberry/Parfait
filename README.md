@@ -40,3 +40,5 @@ Parfait is a wrapper to create and manage par2 files so that recovery info can b
 * add a quiet flag to suppress the summary
 * add flag to turn off recreate (manual mode) and only verify
   * maybe add input file with instructions for each file specified (re-create / restore / do nothing)
+* compile using .net native
+  * https://docs.microsoft.com/en-us/dotnet/framework/net-native/
