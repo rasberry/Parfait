@@ -343,3 +343,4 @@ ASALocalRun/
 test.sh
 *.txt
 TestFile.*
+.par2

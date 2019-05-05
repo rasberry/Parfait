@@ -36,12 +36,6 @@ namespace Parfait
 			}
 
 			foreach(string root in Options.RootFolders) {
-				// make sure data folder exists
-				string dataFolder = Path.Combine(root,Options.DataFolder);
-				if (!Directory.Exists(dataFolder)) {
-					Directory.CreateDirectory(dataFolder);
-				}
-
 				//main processing
 				var allFiles = Helpers.EnumerateFiles(root, Options.Recurse);
 				foreach(string file in allFiles) {
@@ -64,7 +58,6 @@ namespace Parfait
 		{
 			// skip empty file names
 			if (String.IsNullOrWhiteSpace(file)) { return; }
-			file = Path.GetFullPath(file);
 
 			// skip 0 byte files
 			var info = new FileInfo(file);
@@ -77,6 +70,11 @@ namespace Parfait
 			bool doRemove = false;
 			bool doRepair = false;
 
+			// make sure data folder exists
+			string dataFolder = Path.GetDirectoryName(par2DataFile);
+			if (!Directory.Exists(dataFolder)) {
+				Helpers.CreateFolder(dataFolder);
+			}
 			//if we're missing the par2 file create it
 			if (!File.Exists(par2DataFile)) {
 				Log.Info("Create\t"+file);
@@ -152,6 +150,7 @@ namespace Parfait
 
 		static void PruneArchive(string root)
 		{
+			// Log.Debug("PruneArchive '"+root+"'");
 			string par2Folder = Path.Combine(root,Options.DataFolder);
 			var parFiles = Helpers.EnumerateFiles(par2Folder, allowHidden:true);
 			var noDups = new HashSet<string>();

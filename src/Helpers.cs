@@ -13,6 +13,7 @@ namespace Parfait
 			string name = Path.GetFileName(file);
 
 			string par2File = Path.Combine(dir,Options.DataFolder,name + ".par2");
+			// Log.Debug("MapFileToPar2File '"+file+"' -> '"+par2File+"'");
 			return par2File;
 		}
 
@@ -21,7 +22,6 @@ namespace Parfait
 			if (!Path.IsPathRooted(par2File)) {
 				throw new BadPathException("path must be rooted");
 			}
-
 			if (!par2File.EndsWith(".par2")) {
 				throw new BadPathException("par2 path must end in '.par2'");
 			}
@@ -34,7 +34,9 @@ namespace Parfait
 				origFile = origFile.Substring(0,origFile.Length - volExt.Length);
 			}
 
-			return MoveUpOneFolder(origFile);
+			string orig = MoveUpOneFolder(origFile);
+			// Log.Debug("MapPar2ToOrigFile '"+par2File+"' -> '"+orig+"'");
+			return orig;
 		}
 
 		static string MoveUpOneFolder(string pathWithFile)
@@ -117,6 +119,14 @@ namespace Parfait
 			Log.File("I: Delete\t"+path);
 			if (!Options.DryRun) {
 				File.Delete(path);
+			}
+		}
+
+		public static void CreateFolder(string folder)
+		{
+			Log.File("I: CreateFolder\t"+folder);
+			if (!Options.DryRun) {
+				Directory.CreateDirectory(folder);
 			}
 		}
 	}

@@ -33,9 +33,15 @@ Parfait is a wrapper to create and manage par2 files so that recovery info can b
 * https://stackoverflow.com/questions/24578536/how-to-apply-reed-solomon-algorithm-using-zxing-in-c-sharp
 
 ## Example command
-`dotnet run -p src -- -d "d:\temp\par2" "."`
+`dotnet run -p src -- -t .`
+
+## Cleanup
+find -H . -type d | grep -i "^./[^\.]*\.par2" | xargs -n1 -d '\n' trash
 
 ## TODO
+* fix bug with recursive (-r) that puts all the subfolder .par2 folders withing the top level par2 folder instead of with each subfolder
+* add flag to change % of recovery data kept in par files
+* add flag to disable auto-recreate - usefull for backups where nothing should be changing
 * Add a summary with counts of the operations performed
 * add a quiet flag to suppress the summary
 * add flag to turn off recreate (manual mode) and only verify

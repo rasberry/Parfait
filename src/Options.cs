@@ -77,10 +77,17 @@ namespace Parfait
 				return false;
 			}
 			else {
-				foreach(string folder in RootFolders) {
-					if (!Directory.Exists(folder)) {
-						Log.Error("cannot find folder \""+folder+"\"");
+				int len = RootFolders.Count;
+				for(int f=0; f<len; f++)
+				{
+					string folder = RootFolders[f];
+					string rooted = Path.GetFullPath(folder);
+					if (!Directory.Exists(rooted)) {
+						Log.Error("cannot find folder \""+rooted+"\"");
 						return false;
+					}
+					if (0 != String.Compare(folder,rooted)) {
+						RootFolders[f] = rooted;
 					}
 				}
 			}
