@@ -122,12 +122,19 @@ namespace Parfait
 			}
 		}
 
-		public static void CreateFolder(string folder)
+		public static bool CreateFolder(string folder)
 		{
 			Log.File("I: CreateFolder\t"+folder);
 			if (!Options.DryRun) {
-				Directory.CreateDirectory(folder);
+				try {
+					Directory.CreateDirectory(folder);
+				}
+				catch (System.UnauthorizedAccessException e) {
+					Log.Warning("Create Directory failed with \""+e.Message+"\"");
+					return false;
+				}
 			}
+			return true;
 		}
 	}
 }

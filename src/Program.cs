@@ -17,9 +17,9 @@ namespace Parfait
 				return MainMain(args);
 			} catch(Exception e) {
 				#if DEBUG
-				Log.Error(e.ToString());
+				Log.Error("Fatal; "+e.ToString());
 				#else
-				Log.Error(e.Message);
+				Log.Error("Fatal; "+e.Message);
 				#endif
 				return 2; //an exception was thrown
 			} finally {
@@ -65,6 +65,7 @@ namespace Parfait
 
 			string par2DataFile = Helpers.MapFileToPar2File(file);
 
+			//split planning and execution so that we can handle dry run
 			bool doCreate = false;
 			bool doVerify = false;
 			bool doRemove = false;
@@ -73,7 +74,9 @@ namespace Parfait
 			// make sure data folder exists
 			string dataFolder = Path.GetDirectoryName(par2DataFile);
 			if (!Directory.Exists(dataFolder)) {
-				Helpers.CreateFolder(dataFolder);
+				if (!Helpers.CreateFolder(dataFolder)) {
+					return; //skip this folder since we could not create it
+				}
 			}
 			//if we're missing the par2 file create it
 			if (!File.Exists(par2DataFile)) {
@@ -96,14 +99,19 @@ namespace Parfait
 				}
 			}
 
-			if (!Options.DryRun && doRemove) {
+			//if it's a dry run skip actually executing the steps
+			if (Options.DryRun) {
+				return;
+			}
+
+			//perform the actions
+			if (doRemove) {
 				ParHelpers.RemoveParSet(par2DataFile);
 			}
-			if (!Options.DryRun && doCreate) {
+			if (doCreate) {
 				var result = ParHelpers.CreatePar(file, par2DataFile);
 				HandleParResult(result,file);
 			}
-			//verify is read-only so we can do this on a dry-run
 			if (!doCreate && doVerify) {
 				var result = ParHelpers.VerifyFile(file, par2DataFile);
 				HandleParResult(result,file);
@@ -112,7 +120,7 @@ namespace Parfait
 					doRepair = Options.AutoRecover;
 				}
 			}
-			if (!Options.DryRun && doRepair) {
+			if (doRepair) {
 				var result = ParHelpers.RepairFile(file, par2DataFile);
 				HandleParResult(result,file);
 				if (result == ParHelpers.ParResult.Success) {
