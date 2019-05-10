@@ -6,30 +6,36 @@ The mode of operation is defined based on the state of the folder
 * if no .par2 folder is found then par2 files are created for every regular file
 * par2 files are created for any new regular files
 * regular files are checked agains existing par2 files and any missmatches are written to the log
-* automatic recovery can be enabled by using the -a / --auto flag
+* automatic recovery can be enabled by using the -a flag
 * by default missing regular files 
 
 ## Usage ##
 ```
-Usage: Parfait [options] (root folder) [...]
+Usage: Parfait [options] (folder) [...]
  Options:
-  -t             test mode. show info, but don't perform any actions
-  -a             enable automatic recovery
-  -r             recurse into sub-folders
-  -v             verbose mode. show more info
-  -l (log file)  log output to this file
-  -x (file)      path to par2 executable
+  -t             Test mode. show info, but don't perform any actions
+  -r             Recurse into sub-folders
+  -hf            Include hidden files
+  -hd            Include hidden folders
+  -a             Enable automatic recovery
+  -v             Verbose mode. show more info
+  -l (log file)  Log output to this file
+  -x (file)      Path to par2 executable
+  -h / --help    Show this help
 ```
 
 ## Design ##
-[Parchive](https://github.com/Parchive/par2cmdline) files use [Reed-Solomon](https://en.wikipedia.org/wiki/Reed-Solomon_error_correction) codes to save file recovery information.
+[Parchive](http://parchive.sourceforge.net/) files use [Reed-Solomon](https://en.wikipedia.org/wiki/Reed-Solomon_error_correction) codes to save file recovery information.
 
 Parfait is a wrapper to create and manage par2 files so that recovery info can be kept for one or more folders.
 
 ## Additional links / information ##
-* https://www.nuget.org/packages/ZXing.Net/
-* https://github.com/micjahn/ZXing.Net/blob/master/Source/test/src/common/reedsolomon/ReedSolomonTestCase.cs
+* http://parchive.sourceforge.net/
+* https://sourceforge.net/projects/parchive/files/
+* http://paulhoule.com/phpar2/index.php
+* https://github.com/Parchive/par2cmdline
 * https://github.com/antiduh/ErrorCorrection/tree/master/ErrorCorrection
+* https://github.com/micjahn/ZXing.Net/blob/master/Source/test/src/common/reedsolomon/ReedSolomonTestCase.cs
 * https://stackoverflow.com/questions/24578536/how-to-apply-reed-solomon-algorithm-using-zxing-in-c-sharp
 
 ## Example command

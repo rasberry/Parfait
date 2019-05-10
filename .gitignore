@@ -339,8 +339,9 @@ ASALocalRun/
 .localhistory/
 
 # End of https://www.gitignore.io/api/csharp
-.vscode
-test.sh
-*.txt
-TestFile.*
 .par2
+.vscode
+*.txt
+stuff
+test.sh
+TestFile.*
