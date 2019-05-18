@@ -6,31 +6,48 @@ namespace Parfait
 	{
 		public static void Message(string m)
 		{
-			Console.WriteLine(m);
+			InternalWrite(m);
 		}
 
 		public static void Error(string m)
 		{
-			Console.Error.WriteLine("E: "+m);
+			InternalWrite("E: "+m,true);
 		}
 
 		public static void Warning(string m)
 		{
-			Console.WriteLine("W: "+m);
+			InternalWrite("W: "+m);
 		}
 
 		public static void Info(string m)
 		{
 			if (Options.Verbose) {
-				Console.WriteLine("I: "+m);
+				InternalWrite("I: "+m);
 			}
 		}
 
 		public static void Debug(string m)
 		{
 			#if DEBUG
-			Console.WriteLine("D: "+m);
+			InternalWrite("D: "+m);
 			#endif
+		}
+
+		public static void File(string m)
+		{
+			if (Options.Par2LogFile != null) {
+				Options.Par2LogFile.WriteLine(m);
+			}
+		}
+
+		static void InternalWrite(string m, bool isError = false)
+		{
+			if (isError) {
+				Console.Error.WriteLine(m);
+			} else {
+				Console.WriteLine(m);
+			}
+			File(m);
 		}
 	}
 }

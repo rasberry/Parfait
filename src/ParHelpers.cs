@@ -29,7 +29,6 @@ namespace Parfait
 			//apparently -B has to go before -a or it doesn't work
 			string args = "c "+qq+"-r1 -n1 -B \"" + fileDir + "\" -a \"" + par2DataFile + "\" \"" + file + "\"";
 			int ret = RunPar(args);
-			//TODO do something with non success returns
 			return (ParResult)ret;
 		}
 
@@ -39,7 +38,15 @@ namespace Parfait
 			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
 			string args = "v "+qq+"-B \""+fileDir+"\" -a \""+par2DataFile+"\"";
 			int ret = RunPar(args);
-			//TODO do something with non success returns
+			return (ParResult)ret;
+		}
+
+		public static ParResult RepairFile(string file, string par2DataFile)
+		{
+			string fileDir = Path.GetDirectoryName(file);
+			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
+			string args = "r "+qq+"-p -B \""+fileDir+"\" -a \""+par2DataFile+"\"";
+			int ret = RunPar(args);
 			return (ParResult)ret;
 		}
 
@@ -51,23 +58,21 @@ namespace Parfait
 			foreach(string f in fileList) {
 				string name = Path.GetFileName(f);
 				if (name.StartsWith(root)) {
-					File.Delete(f);
+					Helpers.DeleteFile(f);
 				}
 			}
 		}
 
 		static int RunPar(string args)
 		{
-			int exit = Exec(Options.Par2Path, args, out string stdout, out string stderr);
-			if (Options.Par2LogFile != null)
-			{
-				Options.Par2LogFile.WriteLine(exit + ": " + Options.Par2Path + " " + args);
-				if (!String.IsNullOrWhiteSpace(stdout)) {
-					Options.Par2LogFile.WriteLine("SO: " + stdout);
-				}
-				if (!String.IsNullOrWhiteSpace(stderr)) {
-					Options.Par2LogFile.WriteLine("SE: " + stderr);
-				}
+			int exit = Exec(Options.Par2ExePath, args, out string stdout, out string stderr);
+			
+			Log.File(exit + ": " + Options.Par2ExePath + " " + args);
+			if (!String.IsNullOrWhiteSpace(stdout)) {
+				Log.File("SO: " + stdout);
+			}
+			if (!String.IsNullOrWhiteSpace(stderr)) {
+				Log.File("SE: " + stderr);
 			}
 			return exit;
 		}
@@ -87,8 +92,8 @@ namespace Parfait
 				si.CreateNoWindow = true; //don't diplay a window
 
 				proc.StartInfo = si;
+				// proc.PriorityClass = ProcessPriorityClass.Idle;
 				proc.Start();
-				proc.PriorityClass = ProcessPriorityClass.Idle;
 				stdout = proc.StandardOutput.ReadToEnd(); //The output result
 				stderr = proc.StandardError.ReadToEnd();
 				proc.WaitForExit();
@@ -97,4 +102,3 @@ namespace Parfait
 		}
 	}
 }
-
