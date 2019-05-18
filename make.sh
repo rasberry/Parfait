@@ -90,11 +90,11 @@ _publishone() {
 	
 	# package standalone build
 	find "./src/$outAlone/" -maxdepth 1 -type f > "$list"
-	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-$2-standalone.7z"
+	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-standalone-$2.7z"
 	
 	# package native build
 	find "./src/$outNative/" -maxdepth 1 -type f > "$list"
-	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-$2-native.7z"
+	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-native-$2.7z"
 
 	rm "$list"
 }
