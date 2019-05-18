@@ -37,6 +37,21 @@ debug() {
 release() {
 	dotnet build -c "Release"
 }
+clean() {
+	if [ -d "src/bin" ]; then
+		rm -r "src/bin";
+	fi
+	if [ -d "src/obj" ]; then
+		rm -r "src/obj";
+	fi
+	if [ -d "publish" ]; then
+		rm -r "publish";
+	fi
+
+	if [ -f "src/Parfait.csproj.orig" ]; then
+		mv "src/Parfait.csproj.orig" "src/Parfait.csproj"
+	fi
+}
 
 _publishone() {
 	if [ -z "$1" ]; then echo "_publishone invalid rid"; exit 1; fi
@@ -47,15 +62,19 @@ _publishone() {
 
 	list="/tmp/make.sh.tmp.txt"
 
+	if [ -f "src/Parfait.csproj.orig" ]; then
+		mv "src/Parfait.csproj.orig" "src/Parfait.csproj"
+	fi
+
 	# do a restore with RID
 	dotnet restore -r "$1" --force-evaluate
 
 	# build regular
-	outNormal = "bin/Normal/$1"
+	outNormal="bin/Normal/$1"
 	dotnet build -c Release -r "$1" -o "$outNormal" "src/Parfait.csproj"
 
 	# build standalone
-	outAlone = "bin/Alone/$1"
+	outAlone="bin/Alone/$1"
 	dotnet publish -c Release --self-contained -r "$1" -o "$outAlone" "src/Parfait.csproj"
 	
 	# build native - TODO currently does not support cross-compiling
