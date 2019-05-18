@@ -44,6 +44,10 @@ Parfait is a wrapper to create and manage par2 files so that recovery info can b
 ## Cleanup
 find -H . -type d | grep -i "\.par2$" | xargs -n1 -d '\n' trash
 
+## Build
+You can use the regular ```dotnet``` commands for Debug builds
+To publish use ./make.sh publish
+
 ## TODO
 * see if we can replace the par2 executable with https://github.com/heksesang/Parchive.NET
 * add tests for file system premissions failures
