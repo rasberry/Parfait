@@ -2,12 +2,11 @@
 Semi-automated par2 creation / management tool.
 This tool creates par2 data files in a hidden .par2 folder that can be used to fix the original in case of corruption.
 
-The mode of operation is defined based on the state of the folder
+These are the steps that are performed:
 * if no .par2 folder is found then par2 files are created for every regular file
-* par2 files are created for any new regular files
-* regular files are checked agains existing par2 files and any missmatches are written to the log
-* automatic recovery can be enabled by using the -a flag
-* by default missing regular files 
+* par2 files are created for any new regular files in the folder
+* regular files are checked against par2 archives and any corrupted files identified
+* if -a flag specified, file recovery is attempted on corrupted files
 
 ## Usage ##
 ```
@@ -62,5 +61,3 @@ To publish use ./make.sh publish
 * add a quiet flag to suppress the summary
 * add flag to turn off recreate (manual mode) and only verify
   * maybe add input file with instructions for each file specified (re-create / restore / do nothing)
-* compile using .net native
-  * https://docs.microsoft.com/en-us/dotnet/framework/net-native/
