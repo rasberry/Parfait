@@ -10,6 +10,24 @@ else
 	TARGET=$(toLower "$1")
 fi
 
+_getrid() {
+if [[ "$OSTYPE" == "linux"* ]]; then
+	echo "linux-x64"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+	echo "osx-x64"
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+	echo "linux-x64"
+elif [[ "$OSTYPE" == "msys" ]]; then
+	echo "win-x64"
+elif [[ "$OSTYPE" == "win32" ]]; then
+	echo "win-x64"
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+	echo ""
+else
+	echo ""
+fi
+}
+
 test() {
 	dotnet test
 }
@@ -23,25 +41,52 @@ release() {
 _publishone() {
 	if [ -z "$1" ]; then echo "_publishone invalid rid"; exit 1; fi
 	if [ -z "$2" ]; then echo "_publishone invalid version"; exit 1; fi
-	if [ -z "$3" ]; then echo "_publishone framework"; exit 1; fi
+	# if [ -z "$3" ]; then echo "_publishone framework"; exit 1; fi
 	
 	if [ ! -f "publish" ]; then mkdir "publish"; fi
 
-	dotnet publish -c Release --self-contained -r "$1" "src/Parfait.csproj" 
-
 	list="/tmp/make.sh.tmp.txt"
-	find "./src/bin/Release/$3/$1/" -maxdepth 1 -type f > "$list"
-	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-$2.7z"
-	find "./src/bin/Release/$3/$1/publish/" -maxdepth 1 -type f > "$list"
-	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-$2-standalone.7z"
-	rm "$list"
 
+	# do a restore with RID
+	dotnet restore -r "$1" --force-evaluate
+
+	# build regular
+	outNormal = "bin/Normal/$1"
+	dotnet build -c Release -r "$1" -o "$outNormal" "src/Parfait.csproj"
+
+	# build standalone
+	outAlone = "bin/Alone/$1"
+	dotnet publish -c Release --self-contained -r "$1" -o "$outAlone" "src/Parfait.csproj"
+	
+	# build native - TODO currently does not support cross-compiling
+	outNative="bin/Native/$1"
+	mv "src/Parfait.csproj" "src/Parfait.csproj.orig"
+	cp "src/Parfait.csproj.native" "src/Parfait.csproj"
+	dotnet publish -c Release -r "$1" -o "$outNative" "src/Parfait.csproj"
+	mv "src/Parfait.csproj.orig" "src/Parfait.csproj"
+	
+	# package regular build
+	find "./src/$outNormal/" -maxdepth 1 -type f > "$list"
+	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-$2.7z"
+	
+	# package standalone build
+	find "./src/$outAlone/" -maxdepth 1 -type f > "$list"
+	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-$2-standalone.7z"
+	
+	# package native build
+	find "./src/$outNative/" -maxdepth 1 -type f > "$list"
+	7z a -mx=9 -ms=on -i@"$list" "./publish/$1-$2-native.7z"
+
+	rm "$list"
 }
 publish() {
 	# https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
-	_publishone "win-x64" "1.0.0" "netcoreapp2.0"
-	_publishone "linux-x64" "1.0.0" "netcoreapp2.0"
-	_publishone "osx-x64" "1.0.0" "netcoreapp2.0"
+	rid="$(_getrid)"
+	if [ -n "$rid" ]; then
+		_publishone "$(_getrid)" "0.1.0" "netcoreapp2.0"
+	else
+		echo "RID '$OSTYPE' not recognized"
+	fi
 }
 
 2>/dev/null $TARGET || (echo "Target \"$TARGET\" doesn't exist"; exit 1)
