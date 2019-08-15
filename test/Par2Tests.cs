@@ -9,40 +9,22 @@ namespace Parfait.Test
 	[TestClass]
 	public class Par2Tests
 	{
-		static void ClearOptions()
-		{
-			var constructor = typeof(Options).GetConstructor(
-				BindingFlags.Static | BindingFlags.NonPublic,null, new Type[0], null);
-			constructor.Invoke(null, null);
-		}
-
-		static int RunMain(string[] args)
-		{
-			try {
-				return Program.MainMain(args);
-			} finally {
-				if (Options.Par2LogFile != null) {
-					Options.Par2LogFile.Dispose();
-				}
-			}
-		}
-
 		[TestMethod]
 		public void BadInputsReturnOne()
 		{
-			ClearOptions();
-			int result = RunMain(new string[] { "badinput" });
+			TestHelpers.ClearOptions();
+			int result = TestHelpers.RunMain(new string[] { "badinput" });
 			Assert.AreEqual(1,result);
 		}
 
 		[TestMethod]
 		public void CreatePar2Files()
 		{
-			ClearOptions();
+			TestHelpers.ClearOptions();
 			using (var setup = TestData.SetupTestFolder())
 			{
 				string folder = setup.Folder;
-				int result = RunMain(new string[] { folder });
+				int result = TestHelpers.RunMain(new string[] { folder });
 				Assert.AreEqual(0,result);
 				string par2File = TestData.FileNamePar2(folder);
 				Assert.IsTrue(File.Exists(par2File));
@@ -54,13 +36,13 @@ namespace Parfait.Test
 		[TestMethod]
 		public void RecreateTest1()
 		{
-			ClearOptions();
+			TestHelpers.ClearOptions();
 			using (var setup = TestData.SetupTestFolder())
 			{
 				string folder = setup.Folder;
 
 				//create regular par2 files
-				int result = RunMain(new string[] { folder });
+				int result = TestHelpers.RunMain(new string[] { folder });
 				Assert.AreEqual(0,result);
 				string par2File = TestData.FileNamePar2(folder);
 				Assert.IsTrue(File.Exists(par2File));
@@ -76,7 +58,7 @@ namespace Parfait.Test
 				File.Copy(par2FileVol,par2FileVol+".1");
 
 				//run again
-				int result2 = RunMain(new string[] { folder });
+				int result2 = TestHelpers.RunMain(new string[] { folder });
 				Assert.AreEqual(0,result2);
 
 				//compare - files should be different
@@ -89,7 +71,7 @@ namespace Parfait.Test
 		[TestMethod]
 		public void RestoreTest1()
 		{
-			ClearOptions();
+			TestHelpers.ClearOptions();
 			using (var setup = TestData.SetupTestFolder())
 			using (var setup2 = TestData.SetupTestFolder())
 			{
@@ -97,7 +79,7 @@ namespace Parfait.Test
 				string folder2 = setup2.Folder;
 
 				//create regular par2 files
-				int result = RunMain(new string[] { folder });
+				int result = TestHelpers.RunMain(new string[] { folder });
 				Assert.AreEqual(0,result);
 				string par2File = TestData.FileNamePar2(folder);
 				Assert.IsTrue(File.Exists(par2File));
@@ -117,7 +99,7 @@ namespace Parfait.Test
 				File.Copy(par2FileVol,par2FileVol+".1");
 
 				//run again with auto heal
-				int result2 = RunMain(new string[] { folder, "-a" });
+				int result2 = TestHelpers.RunMain(new string[] { folder, "-a" });
 				Assert.AreEqual(0,result2);
 
 				//compare - files should be same
@@ -132,13 +114,13 @@ namespace Parfait.Test
 		[TestMethod]
 		public void RemoveTest1()
 		{
-			ClearOptions();
+			TestHelpers.ClearOptions();
 			using (var setup = TestData.SetupTestFolder())
 			{
 				string folder = setup.Folder;
 
 				//create regular par2 files
-				int result = RunMain(new string[] { folder });
+				int result = TestHelpers.RunMain(new string[] { folder });
 				Assert.AreEqual(0,result);
 				string par2File = TestData.FileNamePar2(folder);
 				Assert.IsTrue(File.Exists(par2File));
@@ -150,7 +132,7 @@ namespace Parfait.Test
 				File.Delete(file);
 
 				//run again
-				int result2 = RunMain(new string[] { folder });
+				int result2 = TestHelpers.RunMain(new string[] { folder });
 				Assert.AreEqual(0,result2);
 
 				//par2 files should also be gone

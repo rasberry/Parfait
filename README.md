@@ -49,15 +49,15 @@ To publish use ./make.sh publish
 
 ## TODO
 * see if we can replace the par2 executable with https://github.com/heksesang/Parchive.NET
-* add tests for file system premissions failures
+* add tests for file system permissions failures
   * create directory
   * delete file
   * delete folder
   * create file
 * add option to only do one operation (create/verify/recreate/repair)
 * add flag to change % of recovery data kept in par files
-* add flag to disable auto-recreate - usefull for backups where nothing should be changing
 * Add a summary with counts of the operations performed
 * add a quiet flag to suppress the summary
+* add flag to disable auto-recreate - usefull for backups where nothing should be changing
 * add flag to turn off recreate (manual mode) and only verify
   * maybe add input file with instructions for each file specified (re-create / restore / do nothing)
