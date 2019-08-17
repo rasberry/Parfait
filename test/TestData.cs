@@ -7,30 +7,15 @@ namespace Parfait.Test
 {
 	public static class TestData
 	{
-		static string TestFileB64 = ""
-			+"H4sICMnhxFwCA1Rlc3RGaWxlLnR4dACtVk1v3DYQvftXTC89bRYJbMcJcjDsOrETuIXjdbtnShpJ"
-			+"zFLkhh/e6ua/ESD9c/4lfUOuguamBXraJYecefNm5lHPT99v3SPT6JKn95YHzWFBrfMUex4psjFi"
-			+"K/YPKpkYls9P/xy9oDuHQ/e67pVvnp++Bbowg7Kq3izo1dnp66Oj56fvNww3KlKrjAmkLRmJtdOx"
-			+"p14PgU2LBSL0CtvWkdePyswKcPw2B3jo2eMmP7KnnQqkqHOuwV9PuKyoUg1tWdVcfN5yjDgZHa20"
-			+"p08u8LanS2U3yHnrOeiGbSTXSvJ070ZlaOVqzXGUzVtnG2cX9CmZERDeHC8BKTiqdeRGslNkfgT4"
-			+"nLStxwWt/HJBFwN7XStL+EU+NiKcwQ+OKguEzuioa63gfMXbyEMFS47wE40GxaHG7Wyh8Mp1wB16"
-			+"kAvmAlPaFkNrWM1j8Tj7vyyog9GTA+eihLTIxHaJZ/k6yb5undtQxeggXkgN0Dg4CoStRqbSRrns"
-			+"FfdYz/J7mv1eOQuToPJuRwG4wAU4yY1pWXd95Tzo0G3ZKiyhYDscQ490RoV5nPzcujuXTAPm0aCo"
-			+"cO4l+lUCg2Jk+HsKEZ0bKcC0ISkFWmdjJSyCfElNx9NuYD4EwVpmDw2HwAF8lcaSmuzEEJSeR99Z"
-			+"dnaBDun6SDesPLD/XTM3QYAdMGzrvvAtiQzS4xUIqJg8w884x9HJyR5M9Inpg9eMnkB2Mm4Vg8k7"
-			+"FwKHoJ09wN0fjjqlbci961KkraxmOZh6K0hjIbOsT0a3fE6QFgv6S3G/Jswp+H/QA7/by6OK2Z9g"
-			+"X8XUQh9wT7IZVMPQi1kAXu+HBgDEt1wvata6BG6UJDbL0dm+RABdRk56XrQQdXLAKLPxw5C5hmEa"
-			+"x1kR3uQId7A5q22XE79UzUIwa/sl+WnzGmEP8HgD1c0s57l9UAYaDLD5/RGm/4Sy7UTmhdclrSfi"
-			+"Fa2SfXGlIdKYTAkMKWz4lznP08sc+Vo0YUG/QYrUIivxPW9TVFGLzItqYMg1xL72uAgvTTm1f29k"
-			+"DAd0MM/Kdh8zD9EAdSQ8dUlVhstQXzvTnBOyGfDKhCXaD5vT8pz+0j7O0+HTV4VVFaJQtoFMruX/"
-			+"rLvlPVhBJOp+3zbTxwAezMcMItdmpCzjxTbCUs/UtlLzj/G/ouYoAifA2pE+5k7iMD0/1In0QgUP"
-			+"eCv+V+Vc69AXEXA0JNACTPk5MHgaCd8c01qcz6TgX+QS7rF2CQAA"
-		;
-
-		public static byte[] TestFileGzip { get {
-			var raw = Convert.FromBase64String(TestFileB64);
-			return raw;
-		}}
+		public static byte[] TestFileData = null;
+		public static byte[] TestFileBytes(int size = 1024) {
+			if (TestFileData == null) {
+				var raw = new byte[size];
+				Rnd.NextBytes(raw);
+				TestFileData = raw;
+			}
+			return TestFileData;
+		}
 
 		public interface IFolderSetup : IDisposable
 		{
@@ -65,7 +50,7 @@ namespace Parfait.Test
 			if (File.Exists(dir)) { File.Delete(dir); }
 			Directory.CreateDirectory(dir);
 			string file = Path.Combine(dir,TestFileGzName);
-			File.WriteAllBytes(file,TestFileGzip);
+			File.WriteAllBytes(file,TestFileBytes());
 			return dir;
 		}
 
@@ -95,7 +80,7 @@ namespace Parfait.Test
 		public static string MakeTestFileAs(string folder, string name)
 		{
 			string file = Path.Combine(folder,name);
-			File.WriteAllBytes(file,TestFileGzip);
+			File.WriteAllBytes(file,TestFileBytes());
 			return file;
 		}
 
@@ -106,7 +91,7 @@ namespace Parfait.Test
 		}
 		public static string FileNamePar2Vol(string folder)
 		{
-			string par2FileVol = Path.Combine(folder,".par2","TestFile.txt.gz.vol00+12.par2");
+			string par2FileVol = Path.Combine(folder,".par2","TestFile.txt.gz.vol00+13.par2");
 			return par2FileVol;
 		}
 
@@ -128,6 +113,11 @@ namespace Parfait.Test
 			return true;
 		}
 
+		//const long TicksPerDay = 24*60*60*10000000L;
+		//static Random InitRnd() {
+		//	int seed = (int)(DateTime.UtcNow.Ticks / TicksPerDay);
+		//	return new Random(seed);
+		//}
 		static Random Rnd = new Random();
 
 		public const string TestFileGzName = "TestFile.txt.gz";
