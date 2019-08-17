@@ -47,6 +47,19 @@ find -H . -type d | grep -i "\.par2$" | xargs -n1 -d '\n' trash
 You can use the regular ```dotnet``` commands for Debug builds
 To publish use ./make.sh publish
 
+## Native Build
+Follow the [CoreRT - build prerequesites](https://github.com/dotnet/corert/blob/ebfbbcd99fac1746a8489a393a4873800c470ef3/Documentation/prerequisites-for-building.md)
+
+### Linux
+2. run ```./make.sh publish```
+
+### Windows
+1. Launch the "x64 Native Tools Command Prompt for VS" command prompt
+2. Use [msys](http://mingw.org/wiki/msys) bash to execute ```./make.sh publish```
+
+### Mac Os-X
+I don't have a Mac currently - TBD
+
 ## TODO
 * see if we can replace the par2 executable with https://github.com/heksesang/Parchive.NET
 * add tests for file system permissions failures
