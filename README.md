@@ -61,7 +61,8 @@ Follow the [CoreRT - build prerequesites](https://github.com/dotnet/corert/blob/
 I don't have a Mac currently - TBD
 
 ## TODO
-* see if we can replace the par2 executable with https://github.com/heksesang/Parchive.NET
+* ~~see if we can replace the par2 executable with https://github.com/heksesang/Parchive.NET~~
+  * Seems to be incomplete
 * add tests for file system permissions failures
   * create directory
   * delete file
