@@ -75,7 +75,7 @@ namespace Parfait
 		static int RunPar(string args)
 		{
 			int exit = Exec(Options.Par2ExePath, args, out string stdout, out string stderr);
-			Log.Debug(exit + ": " + Options.Par2ExePath + " " + args);
+
 			Log.File(exit + ": " + Options.Par2ExePath + " " + args);
 			if (!String.IsNullOrWhiteSpace(stdout)) {
 				Log.File("SO: " + stdout);
