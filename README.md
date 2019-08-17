@@ -51,7 +51,7 @@ To publish use ./make.sh publish
 Follow the [CoreRT - build prerequesites](https://github.com/dotnet/corert/blob/ebfbbcd99fac1746a8489a393a4873800c470ef3/Documentation/prerequisites-for-building.md)
 
 ### Linux
-2. run ```./make.sh publish```
+1. run ```./make.sh publish```
 
 ### Windows
 1. Launch the "x64 Native Tools Command Prompt for VS" command prompt
@@ -75,3 +75,10 @@ I don't have a Mac currently - TBD
 * add flag to disable auto-recreate - usefull for backups where nothing should be changing
 * add flag to turn off recreate (manual mode) and only verify
   * maybe add input file with instructions for each file specified (re-create / restore / do nothing)
+
+## Tests to create ##
+
+* what happens if the par2 data gets corrupted ?
+* how much corruption results in the inability to recover
+* does corruption result in badly restored files
+* is there a particular corruption that restores bad files
