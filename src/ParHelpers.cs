@@ -19,15 +19,24 @@ namespace Parfait
 			OutOfMemory = 8
 		}
 
-		public static ParResult CreatePar(string file, string par2DataFile)
+		const int BlockSize = 4096;
+
+		public static ParResult CreatePar(string file, string par2DataFile, int tolerance)
 		{
 			string parDir = Path.GetDirectoryName(par2DataFile);
 			Directory.CreateDirectory(parDir);
 			string fileDir = Path.GetDirectoryName(file);
 			string qq = Options.Par2LogFile != null ? "-q " : "-q -q ";
+			
+			string qs = "";
+			var fi = new FileInfo(file);
+			if (fi.Length > 200/tolerance*BlockSize) {
+				qs = "-s"+BlockSize+" ";
+			}
 
 			//apparently -B has to go before -a or it doesn't work
-			string args = "c "+qq+"-r1 -n1 -B \"" + fileDir + "\" -a \"" + par2DataFile + "\" \"" + file + "\"";
+			string args = "c " + qq + qs + "-r"+tolerance+" -n1 -B"
+				+" \"" + fileDir + "\" -a \"" + par2DataFile + "\" \"" + file + "\"";
 			int ret = RunPar(args);
 			return (ParResult)ret;
 		}
@@ -66,7 +75,7 @@ namespace Parfait
 		static int RunPar(string args)
 		{
 			int exit = Exec(Options.Par2ExePath, args, out string stdout, out string stderr);
-			
+			Log.Debug(exit + ": " + Options.Par2ExePath + " " + args);
 			Log.File(exit + ": " + Options.Par2ExePath + " " + args);
 			if (!String.IsNullOrWhiteSpace(stdout)) {
 				Log.File("SO: " + stdout);

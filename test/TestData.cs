@@ -75,15 +75,15 @@ namespace Parfait.Test
 			Directory.Delete(dir,true);
 		}
 
-		const int HowManyChanges = 1;
-		public static void ModifyFileData(string file, DateTimeOffset? lastWriteTime = null)
+		public static void ModifyFileData(string file, DateTimeOffset? lastWriteTime = null, int howManyChanges = 1)
 		{
 			using (var fs = File.Open(file,FileMode.Open,FileAccess.ReadWrite,FileShare.Read)) {
-				int len = (int)(fs.Length & int.MaxValue);
-				for(int i=0; i<HowManyChanges; i++) {
+				//int len = (int)(fs.Length & int.MaxValue);
+				int len = (int)fs.Length;
+				for(int i=0; i<howManyChanges; i++) {
 					long next = Rnd.Next(len);
 					fs.Seek(next,SeekOrigin.Begin);
-					fs.WriteByte((byte)'A');
+					fs.WriteByte(0x041); //'A'
 				}
 			}
 
@@ -106,7 +106,7 @@ namespace Parfait.Test
 		}
 		public static string FileNamePar2Vol(string folder)
 		{
-			string par2FileVol = Path.Combine(folder,".par2","TestFile.txt.gz.vol0+2.par2");
+			string par2FileVol = Path.Combine(folder,".par2","TestFile.txt.gz.vol00+12.par2");
 			return par2FileVol;
 		}
 
@@ -122,7 +122,8 @@ namespace Parfait.Test
 				do {
 					b1 = fs1.ReadByte();
 					b2 = fs2.ReadByte();
-				} while (b1 == b2 && b1 != -1 && b2 != -1);
+					if (b1 != b2) { return false; }
+				} while (b1 != -1 && b2 != -1);
 			}
 			return true;
 		}

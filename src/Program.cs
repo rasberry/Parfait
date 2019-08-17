@@ -109,7 +109,7 @@ namespace Parfait
 				ParHelpers.RemoveParSet(par2DataFile);
 			}
 			if (doCreate) {
-				var result = ParHelpers.CreatePar(file, par2DataFile);
+				var result = ParHelpers.CreatePar(file, par2DataFile,Options.Tolerance);
 				HandleParResult(result,file);
 			}
 			if (!doCreate && doVerify) {
@@ -126,7 +126,7 @@ namespace Parfait
 				if (result == ParHelpers.ParResult.Success) {
 					Log.Message("Reparied\t"+file);
 					//the par2 file gets deleted if the repair was successfull
-					var result2 = ParHelpers.CreatePar(file, par2DataFile);
+					var result2 = ParHelpers.CreatePar(file, par2DataFile, Options.Tolerance);
 					HandleParResult(result2,file);
 				}
 			}

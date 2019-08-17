@@ -16,6 +16,7 @@ namespace Parfait
 				+"\n  -hf            Include hidden files"
 				+"\n  -hd            Include hidden folders"
 				+"\n  -a             Enable automatic recovery"
+				+"\n  -c (number)    Amount of corruption to tolerate (0-100 % of file size)"
 				+"\n  -v             Verbose mode. show more info"
 				+"\n  -l (log file)  Log output to this file"
 				+"\n  -x (file)      Path to par2 executable"
@@ -67,6 +68,14 @@ namespace Parfait
 				else if (curr == "-hd") {
 					IncludeHiddenFolders = true;
 				}
+				else if (curr == "-c" && ++a < args.Length) {
+					if (!int.TryParse(args[a],out int Tolerance)
+						|| Tolerance < 1 || Tolerance > 100)
+					{
+						Log.Error("Invalid tolerance amount "+args[a]);
+						return false;
+					}
+				}
 				else if (!String.IsNullOrWhiteSpace(curr)) {
 					RootFolders.Add(curr);
 				}
@@ -105,5 +114,6 @@ namespace Parfait
 		public static bool IncludeHiddenFiles = false;
 		public static bool IncludeHiddenFolders = false;
 		public static string DataFolder = ".par2";
+		public static int Tolerance = 5;
 	}
 }

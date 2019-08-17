@@ -86,13 +86,14 @@ namespace Parfait.Test
 				string par2FileVol = TestData.FileNamePar2Vol(folder);
 				Assert.IsTrue(File.Exists(par2FileVol));
 
-				//change the contents or original
 				string file = Path.Combine(folder,TestData.TestFileGzName);
+				string file2 = Path.Combine(folder2,TestData.TestFileGzName);
+
+				//change the contents or original
 				TestData.ModifyFileData(file,DateTimeOffset.Now.AddHours(-1));
 
 				//original should be different
-				string file2 = TestData.MakeTestFileAs(folder2,TestData.TestFileGzName+".1");
-				Assert.IsTrue(TestData.AreFilesEqual(file,file2));
+				Assert.IsFalse(TestData.AreFilesEqual(file,file2));
 
 				//save off the par files for later
 				File.Copy(par2File,par2File+".1");
