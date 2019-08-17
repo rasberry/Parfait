@@ -1,0 +1,3 @@
+[submodule "src/Parchive.NET"]
+	path = src/Parchive.NET
+	url = git@github.com:heksesang/Parchive.NET.git
