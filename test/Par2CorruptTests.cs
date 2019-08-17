@@ -64,5 +64,3 @@ namespace Parfait.Test
 		}
 	}
 }
-
-// what happens if the par2 data gets corrupted ?
