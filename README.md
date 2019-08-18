@@ -71,7 +71,6 @@ I don't have a Mac currently - TBD
 * add option to only do one operation (create/verify/recreate/repair)
 * Add a summary with counts of the operations performed
 * add a quiet flag to suppress the summary
-* add flag to disable auto-recreate - usefull for backups where nothing should be changing
 * add flag to turn off recreate (manual mode) and only verify
   * maybe add input file with instructions for each file specified (re-create / restore / do nothing)
 
@@ -85,3 +84,5 @@ I don't have a Mac currently - TBD
   * this doesn't seem to be the case
 * ∞ is there a particular corruption that restores bad files
   * not fully tested but haven't seen any yet
+* ∞ add code coverate dotnet test --collect:"Code Coverage"
+  * looks like microsoft hasn't implemented this for linux yet. see [vstest issue 981](https://github.com/Microsoft/vstest/issues/981)
