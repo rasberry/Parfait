@@ -68,6 +68,7 @@ namespace Parfait.Test
 					long next = Rnd.Next(len);
 					fs.Seek(next,SeekOrigin.Begin);
 					int b = fs.ReadByte();
+					fs.Seek(next,SeekOrigin.Begin); //have to seek again since read advances the cursor
 					byte n = (byte)(b == 0x41 ? 0x42 : 0x41); //'B' or 'A'
 					fs.WriteByte(n);
 				}
