@@ -73,15 +73,17 @@ namespace Parfait
 
 			// make sure data folder exists
 			string dataFolder = Path.GetDirectoryName(par2DataFile);
-			if (!Directory.Exists(dataFolder)) {
+			if (Options.AutoCreate && !Directory.Exists(dataFolder)) {
 				if (!Helpers.CreateFolder(dataFolder)) {
 					return; //skip this folder since we could not create it
 				}
 			}
 			//if we're missing the par2 file create it
 			if (!File.Exists(par2DataFile)) {
-				Log.Info("Create\t"+file);
-				doCreate = true;
+				if (Options.AutoCreate) {
+					Log.Info("Create\t"+file);
+					doCreate = true;
+				}
 			}
 			else {
 				var par2Info = new FileInfo(par2DataFile);

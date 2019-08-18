@@ -69,20 +69,19 @@ I don't have a Mac currently - TBD
   * delete folder
   * create file
 * add option to only do one operation (create/verify/recreate/repair)
-* add flag to change % of recovery data kept in par files
 * Add a summary with counts of the operations performed
 * add a quiet flag to suppress the summary
 * add flag to disable auto-recreate - usefull for backups where nothing should be changing
 * add flag to turn off recreate (manual mode) and only verify
   * maybe add input file with instructions for each file specified (re-create / restore / do nothing)
 
-## Tests to create ##
+## Tests ##
 
-* what happens if the par2 data gets corrupted ?
+* ✓ what happens if the par2 data gets corrupted ?
   * looks like any damage to par2 files reduces the amount of data that can be recovered. it seems to be proportional to how much damage was done.
-* how much corruption results in the inability to recover
+* ✓ how much corruption results in the inability to recover
   * looks like it's something like (redundancy * % of par2 good data). so basically if your redundancy was 10% and 50% of par2 volume file is corrupt you can recover 10% * 50% = 5%
-* does corruption result in badly restored files
+* ✓ does corruption result in badly restored files
   * this doesn't seem to be the case
-* is there a particular corruption that restores bad files
+* ∞ is there a particular corruption that restores bad files
   * not fully tested but haven't seen any yet
