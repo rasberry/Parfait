@@ -63,12 +63,13 @@ namespace Parfait.Test
 		public static void ModifyFileData(string file, DateTimeOffset? lastWriteTime = null, int howManyChanges = 1)
 		{
 			using (var fs = File.Open(file,FileMode.Open,FileAccess.ReadWrite,FileShare.Read)) {
-				//int len = (int)(fs.Length & int.MaxValue);
 				int len = (int)fs.Length;
 				for(int i=0; i<howManyChanges; i++) {
 					long next = Rnd.Next(len);
 					fs.Seek(next,SeekOrigin.Begin);
-					fs.WriteByte(0x041); //'A'
+					int b = fs.ReadByte();
+					byte n = (byte)(b == 0x41 ? 0x42 : 0x41); //'B' or 'A'
+					fs.WriteByte(n);
 				}
 			}
 

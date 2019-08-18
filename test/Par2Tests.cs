@@ -49,7 +49,7 @@ namespace Parfait.Test
 				string par2FileVol = TestData.FileNamePar2Vol(folder);
 				Assert.IsTrue(File.Exists(par2FileVol));
 
-				//change the contents or original
+				//change the contents of original
 				string file = Path.Combine(folder,TestData.TestFileGzName);
 				TestData.ModifyFileData(file);
 
@@ -57,7 +57,8 @@ namespace Parfait.Test
 				File.Copy(par2File,par2File+".1");
 				File.Copy(par2FileVol,par2FileVol+".1");
 
-				//run again
+				//run again - should update par2 files since last modified is 
+				// after par2 files were created
 				int result2 = TestHelpers.RunMain(new string[] { folder });
 				Assert.AreEqual(0,result2);
 
