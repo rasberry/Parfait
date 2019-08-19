@@ -73,6 +73,8 @@ I don't have a Mac currently - TBD
 * add a quiet flag to suppress the summary
 * add flag to turn off recreate (manual mode) and only verify
   * maybe add input file with instructions for each file specified (re-create / restore / do nothing)
+* fix problem with partial par2 files being created when the operation is cancelled
+  * maybe recreate if condition can be caught
 
 ## Tests ##
 

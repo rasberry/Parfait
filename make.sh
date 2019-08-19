@@ -103,7 +103,7 @@ publish() {
 	rid="$(_getrid)"
 
 	if [ -n "$rid" ]; then
-		_publishone "$(_getrid)" "0.1.0" "netcoreapp2.0"
+		_publishone "$(_getrid)" "0.2.0" "netcoreapp2.0"
 	else
 		echo "RID '$OSTYPE' not recognized"
 	fi
