@@ -21,7 +21,61 @@ namespace Parfait
 
 		const int BlockSize = 4096;
 
-		public static ParResult CreatePar(string file, string par2DataFile, int tolerance)
+		public static ParResult CreateFolderPar(string folder, int tolerance)
+		{
+			string par2File = Helpers.GetPar2ArchiveName(folder);
+			string par2Folder = Path.GetDirectoryName(par2File);
+
+			if (!Directory.Exists(par2Folder)) {
+				var dinfo = Directory.CreateDirectory(par2Folder);
+				if (!dinfo.Exists) {
+					throw new DirectoryNotFoundException("Could not create "+par2Folder);
+				}
+			}
+
+			string qq = Options.Par2LogFile != null ? " -q" : " -q -q";
+			string args = string.Format("c{0} -r{1} -n1 \"{2}\" \"{3}\"",qq, tolerance, par2File, folder);
+			int ret = RunPar(args);
+			return (ParResult)ret;
+		}
+
+		public static ParResult VerifyFolder(string folder)
+		{
+			string par2File = Helpers.GetPar2ArchiveName(folder);
+			string par2Folder = Path.GetDirectoryName(par2File);
+			
+			if (!Directory.Exists(par2Folder)) {
+				throw new DirectoryNotFoundException("Could not find "+par2Folder);
+			}
+			if (!File.Exists(par2File)) {
+				throw new FileNotFoundException("Could not find "+par2File);
+			}
+
+			string qq = Options.Par2LogFile != null ? " -q" : " -q -q";
+			string args = string.Format("v{0} \"{1}\" \"{2}\"",qq, par2File, folder);
+			int ret = RunPar(args);
+			return (ParResult)ret;
+		}
+
+		public static ParResult RepairFolder(string folder)
+		{
+			string par2File = Helpers.GetPar2ArchiveName(folder);
+			string par2Folder = Path.GetDirectoryName(par2File);
+			
+			if (!Directory.Exists(par2Folder)) {
+				throw new DirectoryNotFoundException("Could not find "+par2Folder);
+			}
+			if (!File.Exists(par2File)) {
+				throw new FileNotFoundException("Could not find "+par2File);
+			}
+
+			string qq = Options.Par2LogFile != null ? " -q" : " -q -q";
+			string args = string.Format("r -p{0} \"{1}\" \"{2}\"",qq, par2File, folder);
+			int ret = RunPar(args);
+			return (ParResult)ret;
+		}
+
+		public static ParResult CreateFilePar(string file, string par2DataFile, int tolerance)
 		{
 			string parDir = Path.GetDirectoryName(par2DataFile);
 			Directory.CreateDirectory(parDir);
@@ -101,7 +155,7 @@ namespace Parfait
 				si.CreateNoWindow = true; //don't diplay a window
 
 				proc.StartInfo = si;
-				// proc.PriorityClass = ProcessPriorityClass.Idle;
+				proc.PriorityClass = ProcessPriorityClass.Idle;
 				proc.Start();
 				stdout = proc.StandardOutput.ReadToEnd(); //The output result
 				stderr = proc.StandardError.ReadToEnd();

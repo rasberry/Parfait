@@ -2,11 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Parfait
 {
 	public static class Helpers
 	{
+		public static string GetPar2ArchiveName(string folder)
+		{
+			string full = Path.GetFullPath(folder);
+			string par2File = Path.Combine(full,".par2","par2data.par2");
+			return par2File;
+		}
+
+		//public static string GetStatusFileName(string folder)
+		//{
+		//	string full = Path.GetFullPath(folder);
+		//	string indexFile = Path.Combine(full,".par2","status.db");
+		//	return indexFile;
+		//}
+
 		public static string MapFileToPar2File(string file)
 		{
 			string dir = Path.GetDirectoryName(file);
@@ -80,7 +95,8 @@ namespace Parfait
 			var folders = Directory.EnumerateDirectories(folder,"*",SearchOption.TopDirectoryOnly);
 			foreach(string d in folders) {
 				//Log.Debug("enum folder "+d);
-				bool show = allowHidden || (!Options.IncludeHiddenFolders && !IsHidden(d));
+				string lastPart = new DirectoryInfo(d).Name;
+				bool show = !IsThisThePar2Folder(d) && (allowHidden || !IsHidden(d));
 				if (show) {
 					//Log.Debug("yield folder "+d);
 					yield return d;
@@ -94,6 +110,37 @@ namespace Parfait
 					}
 				}
 			}
+		}
+
+		public static bool IsThisThePar2Folder(string folder)
+		{
+			string lastPart = new DirectoryInfo(folder).Name;
+			return lastPart == ".par2";
+		}
+
+		public static bool IsFolderEmpty(string folder, bool withHiddenFiles = false)
+		{
+			var files = EnumerateFiles(folder,false,withHiddenFiles);
+			return !files.Any();
+		}
+
+		public static bool DoesFolderNeedUpdate(string folder, bool withHiddenFiles = false)
+		{
+			string par2File = Helpers.GetPar2ArchiveName(folder);
+			var par2FileInfo = new FileInfo(par2File);
+			if (!par2FileInfo.Exists) {
+				throw new FileNotFoundException("Could not find "+par2File);
+			}
+			var par2LastMod = par2FileInfo.LastWriteTimeUtc;
+
+			var files = Helpers.EnumerateFiles(folder,false,withHiddenFiles);
+			foreach(var f in files) {
+				var fileInfo = new FileInfo(f);
+				if (fileInfo.LastWriteTimeUtc > par2LastMod) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		static string[] _hideChecks = new string[] {

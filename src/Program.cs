@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 //let the test project access internal entities
 [assembly:InternalsVisibleTo("Parfait.Test")]
@@ -35,23 +36,90 @@ namespace Parfait
 				return 1; //arguments were incorrect
 			}
 
-			foreach(string root in Options.RootFolders) {
-				//main processing
-				var allFiles = Helpers.EnumerateFiles(root, Options.Recurse);
-				foreach(string file in allFiles) {
-					UpdateDataFile(file);
-				}
+			//get list of all folders
+			var allFolders = new HashSet<string>();
+			allFolders.UnionWith(Options.RootFolders);
 
-				//prune par2 files if original is missing
-				PruneArchive(root);
-				if (Options.Recurse) {
-					var allFolders = Helpers.EnumerateFolders(root, true);
-					foreach(string folder in allFolders) {
-						PruneArchive(folder);
-					}
+			if(Options.Recurse) {
+				foreach(string root in Options.RootFolders) {
+					var folders = Helpers.EnumerateFolders(root,true,Options.IncludeHiddenFolders);
+					allFolders.UnionWith(folders);
 				}
 			}
-			return 0; //success
+
+			foreach(var folder in allFolders) {
+				UpdateFolder(folder);
+			}
+
+			return 0;
+		}
+
+		static void UpdateFolder(string folder)
+		{
+			//if .par2 folder doesn't exist - create it
+			//verify files
+			//if repairs are needed
+			//	if autorepair is on - attept repairs
+			//		if reparis fail stop
+			//	else stop
+			//if any file is modified afer the par2 file
+			//	re-create par2 file
+
+			// skip empty folder names
+			if (String.IsNullOrWhiteSpace(folder)) { return; }
+
+			string par2File = Helpers.GetPar2ArchiveName(folder);
+			string par2Folder = Path.GetDirectoryName(par2File);
+			
+			//skip empty folders
+			if (Helpers.IsFolderEmpty(folder,Options.IncludeHiddenFiles)) { return; }
+
+			//split planning and execution so that we can handle dry run
+			bool doCreate = false;
+			bool doVerify = false;
+			bool doRepair = false;
+
+			// create if data folder if something is missing
+			if (!Directory.Exists(par2Folder) || !File.Exists(par2File)) {
+				if (Options.AutoCreate) {
+					Log.Info("Create\t"+folder);
+					doCreate = true;
+				}
+			}
+			else {
+				Log.Info("Verify\t"+folder);
+				doVerify = true;
+				bool needsUpdate = Helpers.DoesFolderNeedUpdate(folder,Options.IncludeHiddenFiles);
+				if (needsUpdate && Options.AutoCreate) {
+					Log.Info("Update\t"+folder);
+					doCreate = true;
+				}
+			}
+
+			//if it's a dry run skip actually executing the steps
+			if (Options.DryRun) {
+				return;
+			}
+
+			if (doVerify) {
+				var result = ParHelpers.VerifyFolder(folder);
+				HandleParResult(result,folder);
+				if (result == ParHelpers.ParResult.CanRepair) {
+					doRepair = Options.AutoRecover;
+				}
+			}
+			if (doRepair) {
+				var result = ParHelpers.RepairFolder(folder);
+				if (result == ParHelpers.ParResult.Success) {
+					Log.Message("Reparied\t"+folder);
+					//the par2 file gets deleted if the repair was successfull
+					doCreate = true;
+				}
+			}
+			if (doCreate) {
+				var result = ParHelpers.CreateFolderPar(folder,Options.Tolerance);
+				HandleParResult(result,folder);
+			}
 		}
 
 		static void UpdateDataFile(string file)
@@ -111,7 +179,7 @@ namespace Parfait
 				ParHelpers.RemoveParSet(par2DataFile);
 			}
 			if (doCreate) {
-				var result = ParHelpers.CreatePar(file, par2DataFile,Options.Tolerance);
+				var result = ParHelpers.CreateFilePar(file, par2DataFile,Options.Tolerance);
 				HandleParResult(result,file);
 			}
 			if (!doCreate && doVerify) {
@@ -128,7 +196,7 @@ namespace Parfait
 				if (result == ParHelpers.ParResult.Success) {
 					Log.Message("Reparied\t"+file);
 					//the par2 file gets deleted if the repair was successfull
-					var result2 = ParHelpers.CreatePar(file, par2DataFile, Options.Tolerance);
+					var result2 = ParHelpers.CreateFilePar(file, par2DataFile, Options.Tolerance);
 					HandleParResult(result2,file);
 				}
 			}
